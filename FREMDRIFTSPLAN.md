@@ -6,7 +6,7 @@ TT - Tore Trønnes
 KG - Konstantina Goteva
 
 
-01.04.2025  - Starter prosjekt for full. 
+01.04.2025  - Starter prosjekt for full. - ALLE
             - GitHub repo opprettet 
             - Plan tegnet ut og GUI valgt. 
             - Velge API library.
