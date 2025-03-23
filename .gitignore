@@ -1,0 +1,4 @@
+#Ignoreringfiler
+__pycache__/
+env/
+*.env
