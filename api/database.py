@@ -23,7 +23,7 @@ mydb = mysql.connector.connect( # Tilkoblingen til databasen
     database = 'varehusdb' # Valgt database.
 )
 mycursor = mydb.cursor() # Dette er vel en virituell markør
-mycursor.execute("SELECT * FROM kunde") # Spørringen
+mycursor.execute("SELECT * FROM ordre") # Spørringen
 myresult = mycursor.fetchall() # Lagrer resultat fra spørring
 for x in myresult: # Skriver ut spørring
     print(x) 

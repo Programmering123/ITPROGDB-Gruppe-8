@@ -17,7 +17,7 @@ DB_PORT = "3306"
 
 * Sånn - da skal filer som ikke blir syncet med github være i orden.
 * Kjør disse kommandoene i terminalen i VSCode f eks, evt i cmd, men sikkert lurt å gjøre det i GitHub Repo mappen. (Ikke ta med kommentarene mine )
-python -m pip install mysql-connector-python # for tilkobling til mysql DB
+py -m pip install mysql-connector-python # for tilkobling til mysql DB
 python -m pip install python-dotenv # For å inkludere sjult .env fil.
 python -m pip install path # For å definere env fil . Usikker på om vi må ha denne., prøv gjerne først uten.
 
