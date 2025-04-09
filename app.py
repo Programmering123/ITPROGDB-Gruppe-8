@@ -17,7 +17,8 @@ meny = customtkinter.CTkFrame(master=vindu, bg_color="grey", fg_color="white", c
 meny.grid(row=0, column=0, sticky="nsw", padx=10) # Oppsett av en grid for å få plassert komponenter riktig
 meny.grid_rowconfigure(0, weight=2) # plassering av rader
 meny.grid_columnconfigure(0, weight=1) # plassering av kolonner
-
+# TODO: Lage flere knapper
+# FIXME: Få plassert knapp2 riktig
 # Knapper i menyen: se https://customtkinter.tomschimansky.com/documentation/widgets/button for forklaring 
 knapp = customtkinter.CTkButton(master=meny, text="Ordre", command=vis_ordre()) # definerer første knappen. 
 knapp.grid(sticky="nw")

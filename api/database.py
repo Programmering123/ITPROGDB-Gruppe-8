@@ -15,7 +15,8 @@ DB_USER = os.getenv("DB_USER")
 DB_HOST = os.getenv("DB_HOST")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_PORT = os.getenv("DB_PORT")
-
+# TODO: Husk å gjøre ferdig
+# FIXME: Dette funker ikke.. 
 mydb = mysql.connector.connect( # Tilkoblingen til databasen
     host=DB_HOST,
     user=DB_USER,
