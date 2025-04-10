@@ -48,7 +48,7 @@ vindu.knapp2.grid(column=0, row=1, sticky="nw", padx=10, pady=(0,5)) # TROR dett
 vindu.knapp2 = customtkinter.CTkButton(master=vindu.meny, text="Varebeholdning") #definerer andre knappen
 vindu.knapp2.grid(column=0, row=2, sticky="nw", padx=10, pady=(0,5)) # TROR dette definerer at knapp skal "limes" til "North East"
 
-vindu.knapp3 = customtkinter.CTkButton(master=vindu.meny, text="Kunder")
+vindu.knapp3 = customtkinter.CTkButton(master=vindu.meny, text="Kunder", command=vis_kunder)#definerer knapp tre
 vindu.knapp3.grid(column=0, row=3, sticky="nw", padx=10, pady=(0,5))
 
 vindu.mainloop()
