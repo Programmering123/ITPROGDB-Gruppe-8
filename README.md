@@ -46,3 +46,7 @@ Dette prosjektet har som mål å utvikle en brukervennlig GUI-applikasjon for å
 * Presentasjon (15-20 minutter).
 
 ## 📂 Struktur
+
+Starte venv.
+Set-ExecutionPolicy Unrestricted -Scope Process
+.\.venv\Scripts\activate
