@@ -4,6 +4,10 @@ import customtkinter
 # Antar vi skal ha noe her..
 def vis_ordrer():
     return print("vise ordrer!")
+def vis_varelager():
+    return print("vise varelager")
+def vis_kunder():
+    return print("vise kunder")
 
 # Hovedvindu:
 vindu = customtkinter.CTk(fg_color="white")
@@ -37,14 +41,14 @@ vindu.knapp.grid(column=0, row=0, sticky="nw", padx=10, pady=3)
 
 vindu.knapp2 = customtkinter.CTkButton(master=vindu.meny, 
                                        text="Varelager",
-                                       command="vis_varelager"
+                                       command=vis_varelager
                                        ) #definerer andre knappen
 vindu.knapp2.grid(column=0, row=1, sticky="nw", padx=10, pady=(0,5)) # TROR dette definerer at knapp skal "limes" til "North East"
 
 vindu.knapp2 = customtkinter.CTkButton(master=vindu.meny, text="Varebeholdning") #definerer andre knappen
 vindu.knapp2.grid(column=0, row=2, sticky="nw", padx=10, pady=(0,5)) # TROR dette definerer at knapp skal "limes" til "North East"
 
-vindu.knapp3 = customtkinter.CTkButton(master=vindu.meny, text="En test")
+vindu.knapp3 = customtkinter.CTkButton(master=vindu.meny, text="Kunder")
 vindu.knapp3.grid(column=0, row=3, sticky="nw", padx=10, pady=(0,5))
 
 vindu.mainloop()
