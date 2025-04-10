@@ -26,7 +26,7 @@ vindu.meny.grid(row=0, column=0, sticky="nsw", padx=10, pady=(10,0)) # Oppsett a
 
 # Knapper i menyen: se https://customtkinter.tomschimansky.com/documentation/widgets/button for forklaring 
 vindu.knapp = customtkinter.CTkButton(master=vindu.meny, text="Ordrer") # definerer første knappen. 
-vindu.knapp.grid(column=0, row=0, sticky="nw", padx=10, pady=(0,5))
+vindu.knapp.grid(column=0, row=0, sticky="nw", padx=10, pady=(3))
 
 vindu.knapp2 = customtkinter.CTkButton(master=vindu.meny, text="Varelager") #definerer andre knappen
 vindu.knapp2.grid(column=0, row=1, sticky="nw", padx=10, pady=(0,5)) # TROR dette definerer at knapp skal "limes" til "North East"
@@ -34,7 +34,7 @@ vindu.knapp2.grid(column=0, row=1, sticky="nw", padx=10, pady=(0,5)) # TROR dett
 vindu.knapp2 = customtkinter.CTkButton(master=vindu.meny, text="Varebeholdning") #definerer andre knappen
 vindu.knapp2.grid(column=0, row=2, sticky="nw", padx=10, pady=(0,5)) # TROR dette definerer at knapp skal "limes" til "North East"
 
-vindu.knappen = customtkinter.CTkButton(vindu, text="En test")
-vindu.knappen.grid(row=3, column=0, pady=10, sticky="ew")
+vindu.knapp3 = customtkinter.CTkButton(master=vindu.meny, text="En test")
+vindu.knapp3.grid(column=0, row=3, sticky="nw", padx=10, pady=(0,5))
 
 vindu.mainloop()
