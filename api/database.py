@@ -29,5 +29,7 @@ myresult = mycursor.fetchall() # Lagrer resultat fra spørring
 for x in myresult: # Skriver ut spørring
     print(x) 
 
+# TODO: Opprette funksjoner for hver spørring vi trenger (hva slags spørringer må vi ha? Se i oppgaven.)
+
 # Referanse: https://www.w3schools.com/python/python_mysql_select.asp
 # print(mydb)

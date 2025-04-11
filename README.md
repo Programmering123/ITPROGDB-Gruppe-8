@@ -11,7 +11,7 @@ Dette prosjektet har som mål å utvikle en brukervennlig GUI-applikasjon for å
 * Sørge for sikkerhet mot SQL-injection og validere brukerinndata.
 * Bruke "Stored Procedures" for spesifikke databaseoperasjoner (f.eks. kundeoversikt).
 * Valgfritt: Generere PDF-fakturaer.
-
+# TODO: Tegne ut GUI i plantegning.
 ### ⚙️ Funksjonalitet
 
 * **Varelager:**
@@ -47,6 +47,8 @@ Dette prosjektet har som mål å utvikle en brukervennlig GUI-applikasjon for å
 
 ## 📂 Struktur
 
-Starte venv.
+Starte Virtual Environment, kjør disse kommandoene: 
 Set-ExecutionPolicy Unrestricted -Scope Process
 .\.venv\Scripts\activate
+
+Kan testes ved å kjøre pip list, for å se om det er riktige pakker innstallert
