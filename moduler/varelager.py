@@ -1,1 +1,0 @@
-# TODO: Lage oversikt over varelager, i tillegg mulighet for å legge til og fjerne ting?

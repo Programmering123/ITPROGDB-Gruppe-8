@@ -15,6 +15,7 @@ DB_USER = os.getenv("DB_USER")
 DB_HOST = os.getenv("DB_HOST")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_PORT = os.getenv("DB_PORT")
+
 mydb = mysql.connector.connect( # Tilkoblingen til databasen
     host=DB_HOST,
     user=DB_USER,
@@ -26,8 +27,6 @@ mycursor.execute("SELECT * FROM ordre") # Spørringen
 myresult = mycursor.fetchall() # Lagrer resultat fra spørring
 for x in myresult: # Skriver ut spørring
     print(x) 
-
-# TODO: Opprette funksjoner for hver spørring vi trenger (hva slags spørringer må vi ha? Se i oppgaven.)
 
 # Referanse: https://www.w3schools.com/python/python_mysql_select.asp
 # print(mydb)
