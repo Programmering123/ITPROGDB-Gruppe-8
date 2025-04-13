@@ -1,18 +1,30 @@
-# TODO: pynte opp tabellen, den må ta opp hele bredden
 import customtkinter
+from api.database import hent_ordrer # Importer databasen fra api/database.py
 class OrdrerModul:
     def __init__(self, master):
         self.master = master
 
     def vis(self):
-        data = [ # TODO: Hente data fra api/database
-            ["123", "Kunde A", "2023-10-01", "Fullført",],
-            ["124", "Kunde B", "2023-10-02", "Under behandling",],
-            ["125", "Kunde C", "2023-10-03", "Avbrutt",],
-            ["126", "Kunde D", "2023-10-04", "Fullført",],
-            ["127", "Kunde E", "2023-10-05", "Under behandling",],
-            ["128", "Kunde F", "2023-10-06", "Avbrutt",],            
-        ]   # Eksempeldata for ordrer 
+        try:
+            data = hent_ordrer() # Henter ordrer fra databasen
+            print(data)
+            data = [
+                [str(celle) if isinstance(celle, (int, str)) else celle.strftime("%Y-%m-%d") for celle in rad]
+                for rad in data
+            ]
+            print(data)
+
+        except:
+            print("Feil ved henting av ordrer fra databasen.")
+            data = []
+        # data = [ # TODO: Hente data fra api/database
+        #     ["123", "Kunde A", "2023-10-01", "Fullført",],
+        #     ["124", "Kunde B", "2023-10-02", "Under behandling",],
+        #     ["125", "Kunde C", "2023-10-03", "Avbrutt",],
+        #     ["126", "Kunde D", "2023-10-04", "Fullført",],
+        #     ["127", "Kunde E", "2023-10-05", "Under behandling",],
+        #     ["128", "Kunde F", "2023-10-06", "Avbrutt",],            
+        # ]   # Eksempeldata for ordrer 
 
         kolonner = ["Ordrenummer", "Kunde", "Dato", "Status"] # Kolonnenavnene
 
