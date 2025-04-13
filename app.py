@@ -1,54 +1,73 @@
-import tk
+# import tk
 import customtkinter
-# Temp
-# Antar vi skal ha noe her..
-def vis_ordrer():
-    return print("vise ordrer!")
-def vis_varelager():
-    return print("vise varelager")
-def vis_kunder():
-    return print("vise kunder")
+from moduler.ordrer import OrdrerModul
+from moduler.varelager import VarelagerModul
+from moduler.kunder import KunderModul
 
-# Hovedvindu:
-vindu = customtkinter.CTk(fg_color="white")
-vindu.title("Testing") #Her er tittelen på ruta
-vindu.geometry("1280x720") #Definerer størrelsen på vinduet 
-vindu.grid_columnconfigure(0, weight=1) # Konfigurasjon av kolonne grid
-vindu.grid_rowconfigure(0, weight=1) # konfigurasjon av rad grid
+class App(customtkinter.CTk):
+    def __init__(self):
+        # Oppretter hovedvinduet:
+        super().__init__()
+        self.title("Testing")
+        self.geometry("1280x720")
+        self.grid_columnconfigure(0, weight=0, minsize=200) # Meny venstre side låser denne til 200px. weight=0 gjør at den ikke vokser.
+        self.grid_columnconfigure(1, weight=1) # Visningsvindu (resten av vinduet på høyre side )
+        self.grid_rowconfigure(0, weight=1) # Hele høyden
+        # Oppretter menyen:
+        self.opprett_meny()
+        # Oppretter visningsruten:
+        self.opprett_visningsrute()
+        # Starter hovedloop:
+        self.mainloop()
+    
+    def opprett_meny(self):
+        # Oppretter menyen på venstre side: (se https://customtkinter.tomschimansky.com/documentation/widgets/frame for forklaring)
+        self.meny = customtkinter.CTkFrame(
+            master=self,
+            fg_color="lightgrey",
+            corner_radius=2
+            )
+        self.meny.grid(row=0, column=0, sticky="nsew", padx=0, pady=0)
+        # Oppretter knappene i menyen: ( se https://customtkinter.tomschimansky.com/documentation/widgets/button for forklaring )
+        self.knapp = customtkinter.CTkButton(master=self.meny, text="Ordrer", command=lambda: self.vis_modul(OrdrerModul))
+        self.knapp.grid(column=0, row=0, sticky="n", padx=10, pady=3) 
+        self.knapp2 = customtkinter.CTkButton(master=self.meny, text="Varelager", command=lambda: self.vis_modul(VarelagerModul))
+        self.knapp2.grid(column=0, row=1, sticky="n", padx=10, pady=(0,5))
+        self.knapp3 = customtkinter.CTkButton(master=self.meny, text="Kunder", command=lambda: self.vis_modul(KunderModul))
+        self.knapp3.grid(column=0, row=3, sticky="n", padx=10, pady=(0,5))
 
-# Meny på venstre side: se https://customtkinter.tomschimansky.com/documentation/widgets/frame for forklaring
-vindu.meny = customtkinter.CTkFrame(
-        master=vindu,
-        bg_color="grey",
-        fg_color="white",
-        corner_radius=2,
-        border_color="red", # TODO: Denne er midlertidig, kun får å se rammen.
-        border_width=2) # Oppretter et meny felt i form av en frame. 
-vindu.meny.grid(row=0, 
-                column=0, 
-                sticky="nsw", 
-                padx=10, 
-                pady=(10,0)) # Oppsett av en grid for å få plassert komponenter riktig
+    # Funkjoner for knappene i menyen:
+    def vis_ordrer(self):
+        print("vise ordrer!")
+    def vis_varelager(self):
+        print("vise varelager")
+    def vis_kunder(self):
+        print("vise kunder")
 
 
-# Knapper i menyen: se https://customtkinter.tomschimansky.com/documentation/widgets/button for forklaring 
-# TODO: Opprett riktige knapper her.
-vindu.knapp = customtkinter.CTkButton(master=vindu.meny, # Definerer hvilket objekt denne skal ligge under
-                                      text="Ordrer", # Hva teksten skal vise
-                                      command=vis_ordrer # Definerer hva slags kommando som skal kjøres
-                                      ) 
-vindu.knapp.grid(column=0, row=0, sticky="nw", padx=10, pady=3)
+    
+    # Visningsrute:
+    def opprett_visningsrute(self):
+        # Oppretter visningsruten: (se https://customtkinter.tomschimansky.com/documentation/widgets/frame for forklaring)
+        self.visningsrute = customtkinter.CTkFrame(
+            master=self,
+            fg_color="white",
+            corner_radius=2
+            )
+        self.visningsrute.grid(row=0, column=1, sticky="nsew", padx=0, pady=0)
+        # Setter opp grid for visningsruten og får den til å ta opp hele høyden og bredden:
+        self.visningsrute.grid_rowconfigure(0, weight=1)
+        self.visningsrute.grid_columnconfigure(0, weight=1)
 
-vindu.knapp2 = customtkinter.CTkButton(master=vindu.meny, 
-                                       text="Varelager",
-                                       command=vis_varelager
-                                       ) #definerer andre knappen
-vindu.knapp2.grid(column=0, row=1, sticky="nw", padx=10, pady=(0,5)) # TROR dette definerer at knapp skal "limes" til "North East"
 
-vindu.knapp2 = customtkinter.CTkButton(master=vindu.meny, text="Varebeholdning") #definerer andre knappen
-vindu.knapp2.grid(column=0, row=2, sticky="nw", padx=10, pady=(0,5)) # TROR dette definerer at knapp skal "limes" til "North East"
-
-vindu.knapp3 = customtkinter.CTkButton(master=vindu.meny, text="Kunder", command=vis_kunder)#definerer knapp tre
-vindu.knapp3.grid(column=0, row=3, sticky="nw", padx=10, pady=(0,5))
-
-vindu.mainloop()
+    def vis_modul(self, modul_klasse):
+        # Funksjon for å vise en modul i visningsruten:
+        # Sletter innholdet i visningsruten:
+        for widget in self.visningsrute.winfo_children():
+            widget.destroy()
+        # Oppretter ny modul:
+        modul = modul_klasse(self.visningsrute)
+        modul.vis()
+# Starter programmet:
+if __name__ == "__main__":
+    App()
