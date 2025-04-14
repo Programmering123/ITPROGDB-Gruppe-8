@@ -10,7 +10,7 @@ class OrdrerModul:
             data = hent_ordrer(10) # Henter ordrer fra databasen
             # Må vaske dataen litt før vi kan bruke den:
             data = [
-                [str(celle) if isinstance(celle, (int, str)) else celle.strftime("%Y-%m-%d") for celle in rad]
+                [str(celle) if isinstance(celle, (int, str)) else celle.strftime("%d.%m.%Y") for celle in rad]
                 for rad in data
             ]
             #print(data)
@@ -44,6 +44,7 @@ class OrdrerModul:
             command=lambda: print("søkefunksjon.." + leteord.get()), # TODO: Legg inn søkefunksjon her.
         )
         knapp_søk.grid(row=0, column=1, sticky="nw", padx=10, pady=10)
+  
 
         # Oppretter en ramme for tabellen:
         tabell_ramme = customtkinter.CTkFrame(master=self.master, fg_color="lightgrey", corner_radius=5)
