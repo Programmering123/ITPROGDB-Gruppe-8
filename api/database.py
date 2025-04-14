@@ -25,13 +25,14 @@ def tilkobling_database():
         database = 'varehusdb' # Valgt database.
     )
 
-# Funksjon for å hentre ordrer:
-def hent_ordrer():
+# Funksjon for å hentre ordrer: # TODO: Tenker at denne SQLen kan være fin å ha som stored procedure i databasen.
+def hent_ordrer(fra=0, til=20): 
     try:
         databasen = tilkobling_database() # Koble til databasen
         spørring = databasen.cursor() # Dette er vel en virituell "markør"
         # TODO: Har begrenset spørring på 10(LIMIT), kan ikke ha for mange, programmet henger seg. Finne en dynamisk visning her.
-        spørring.execute("SELECT OrdreNr, Fornavn, OrdreDato, BetaltDato FROM ordre INNER JOIN kunde ON ordre.KNr = kunde.KNr LIMIT 10") # Spørringen 
+
+        spørring.execute(f"SELECT OrdreNr, Fornavn, OrdreDato, BetaltDato FROM ordre INNER JOIN kunde ON ordre.KNr = kunde.KNr LIMIT {fra}, {til}") # Spørringen 
         resultat = spørring.fetchall() # Lagrer resultat fra spørring
         return resultat # Returnerer resultatet
     except mysql.connector.Error as err:

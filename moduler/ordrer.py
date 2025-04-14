@@ -5,32 +5,55 @@ class OrdrerModul:
         self.master = master
 
     def vis(self):
-        try:
-            data = hent_ordrer() # Henter ordrer fra databasen
-            print(data)
+        kolonner = ["Ordrenummer", "Kunde", "Dato", "Status"] # Kolonnenavnene som vi skal vise
+        try: # prøver å hente data fra databasen.
+            data = hent_ordrer(10) # Henter ordrer fra databasen
+            # Må vaske dataen litt før vi kan bruke den:
             data = [
                 [str(celle) if isinstance(celle, (int, str)) else celle.strftime("%Y-%m-%d") for celle in rad]
                 for rad in data
             ]
-            print(data)
+            #print(data)
 
-        except:
+        except: # Hvis vi ikke får hentet data så legger vi inn en tom liste.
             print("Feil ved henting av ordrer fra databasen.")
             data = []
-        # data = [ # TODO: Hente data fra api/database
-        #     ["123", "Kunde A", "2023-10-01", "Fullført",],
-        #     ["124", "Kunde B", "2023-10-02", "Under behandling",],
-        #     ["125", "Kunde C", "2023-10-03", "Avbrutt",],
-        #     ["126", "Kunde D", "2023-10-04", "Fullført",],
-        #     ["127", "Kunde E", "2023-10-05", "Under behandling",],
-        #     ["128", "Kunde F", "2023-10-06", "Avbrutt",],            
-        # ]   # Eksempeldata for ordrer 
 
-        kolonner = ["Ordrenummer", "Kunde", "Dato", "Status"] # Kolonnenavnene
+        # TODO: Lage søkefelt for å søke i ordrer.
+        # Ramme for søkefelt og søkeknapp:
+        meny_ramme = customtkinter.CTkFrame(master=self.master, fg_color="lightgrey")
+        meny_ramme.grid(row=0, column=0, sticky="nwe", padx=10, pady=10)
+        # Søkefelt:
+        leteord = customtkinter.CTkEntry(
+            master=meny_ramme,
+            width=300,
+            height=30,
+            corner_radius=5,
+            fg_color="lightgrey",
+            text_color="black",
+            bg_color="white",
+            placeholder_text="Søk i ordrer...",
+            placeholder_text_color="grey",
+        )
+        leteord.grid(row=0, column=0, sticky="nw", padx=10, pady=10)
+        # leteord.grid_rowconfigure(0,minsize=30, weight=1) # Gjør søkefeltet dynamisk justerbart.
+        # Søkeknapp:
+        knapp_søk = customtkinter.CTkButton(
+            master=meny_ramme,
+            text="Søk",
+            command=lambda: print("søkefunksjon.." + leteord.get()), # TODO: Legg inn søkefunksjon her.
+        )
+        knapp_søk.grid(row=0, column=1, sticky="nw", padx=10, pady=10)
 
         # Oppretter en ramme for tabellen:
         tabell_ramme = customtkinter.CTkFrame(master=self.master, fg_color="lightgrey", corner_radius=5)
-        tabell_ramme.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+        tabell_ramme.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
+
+        # Setter opp grid for tabellen og får den til å ta opp hele høyden og bredden:
+        self.master.grid_rowconfigure(0, weight=0) # Låser ramme_meny
+        self.master.grid_rowconfigure(1, weight=1)  # Fleksibel høyde for tabellen
+        self.master.grid_columnconfigure(0, weight=1) # Fleksibel bredde for tabellen
+
 
 
         # Setter opp kolonnene i tabellen:
