@@ -25,6 +25,7 @@ def tilkobling_database():
         database = 'varehusdb' # Valgt database.
     )
 
+# TODO: Opprette flere funksjoner for hver spørring vi trenger (hva slags spørringer må vi ha? Se i oppgaven.)
 # Funksjon for å hentre ordrer: # TODO: Tenker at denne SQLen kan være fin å ha som stored procedure i databasen.
 def hent_ordrer(fra=0, til=20): 
     try:
@@ -38,7 +39,19 @@ def hent_ordrer(fra=0, til=20):
     except mysql.connector.Error as err:
         print(f"Feil ved henting av ordrelinjer: {err}")
         return []
-# TODO: Opprette flere funksjoner for hver spørring vi trenger (hva slags spørringer må vi ha? Se i oppgaven.)
+
+# Funksjon for å hente varelageret: (oppgave: Vise en liste over hvilke varer som er på varelageret, inkludert varenummer, navn på varen, antall og pris. )
+# Tilgjengelige kolonner i vare: VNr, Betegnelse, Pris, KatNr, Antall, Hylle 
+def hent_varelager():
+    try:
+        databasen = tilkobling_database() # Koble til databasen
+        spørring = databasen.cursor() # Dette er en virituell "markør"
+        spørring.execute("SELECT VNr, Betegnelse, Antall, Pris FROM vare LIMIT 1000") # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
+        resultat = spørring.fetchall() # Lagrer resultat fra spørring
+        return resultat # Returnerer resultatet
+    except mysql.connector.Error as err:
+        print(f"Feil ved henting av varelager: {err}")
+        return []
 
 # Referanse: https://www.w3schools.com/python/python_mysql_select.asp
 # print(mydb)

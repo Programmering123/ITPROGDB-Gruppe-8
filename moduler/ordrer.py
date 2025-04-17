@@ -1,3 +1,8 @@
+# Oppgavetekst: 
+# Ha funksjonalitet som lister opp alle ordrer som ligger i databasen.   
+# Kunne velge en spesifikk ordre og vise hva slags varer, antall av hver vare som har blitt solgt, 
+# pris pr.vare, pris ganger antall, kunde m/navn og adresse og total pris
+
 import customtkinter
 from api.database import hent_ordrer # Importer databasen fra api/database.py
 class OrdrerModul:

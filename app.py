@@ -1,5 +1,6 @@
 # import tk
 import customtkinter
+from PIL import Image
 from moduler.ordrer import OrdrerModul
 from moduler.varelager import VarelagerModul
 from moduler.kunder import KunderModul
@@ -8,9 +9,11 @@ class App(customtkinter.CTk):
     def __init__(self):
         # Oppretter hovedvinduet:
         super().__init__()
-        self.title("Testing")
+        self.title("Varelageret") # TODO: Finne på et bra navn til programmet.
+        customtkinter.set_default_color_theme("dark-blue") # Setter temaet til dark-blue
+        self.iconbitmap("assets/icon.ico")
         self.geometry("1280x720")
-        self.grid_columnconfigure(0, weight=0, minsize=200) # Meny venstre side låser denne til 200px. weight=0 gjør at den ikke vokser.
+        self.grid_columnconfigure(0, weight=0) # Meny venstre side låser denne til 200px. weight=0 gjør at den ikke vokser.
         self.grid_columnconfigure(1, weight=1) # Visningsvindu (resten av vinduet på høyre side )
         self.grid_rowconfigure(0, weight=1) # Hele høyden
         # Oppretter menyen:
@@ -25,24 +28,36 @@ class App(customtkinter.CTk):
         self.meny = customtkinter.CTkFrame(
             master=self,
             fg_color="lightgrey",
-            corner_radius=2
-            )
+            corner_radius=2,
+            width=200, # Setter bredden på menyen til 200px
+        )
         self.meny.grid(row=0, column=0, sticky="nsew", padx=0, pady=0)
+        self.meny.grid_columnconfigure(0, weight=1) # Sentrerer innhold
+
+        # Setter opp ikon her: 
+        self.bilde = customtkinter.CTkImage(
+            dark_image=Image.open("assets/icon.ico"), 
+            light_image=Image.open("assets/icon.ico"),
+            size=(140, 140)
+        )
+        self.bildeknapp = customtkinter.CTkButton(
+            master=self.meny,
+            image=self.bilde,
+            width=140,
+            height=140,
+            fg_color="lightgrey",
+            hover_color="lightgrey",
+            text="",
+        ) 
+        self.bildeknapp.grid(row=0, column=0, sticky="n", padx=10, pady=10)
         # Oppretter knappene i menyen: ( se https://customtkinter.tomschimansky.com/documentation/widgets/button for forklaring )
         self.knapp = customtkinter.CTkButton(master=self.meny, text="Ordrer", command=lambda: self.vis_modul(OrdrerModul))
-        self.knapp.grid(column=0, row=0, sticky="n", padx=10, pady=3) 
+        self.knapp.grid(row=1, column=0, sticky="n", padx=10, pady=3) 
         self.knapp2 = customtkinter.CTkButton(master=self.meny, text="Varelager", command=lambda: self.vis_modul(VarelagerModul))
-        self.knapp2.grid(column=0, row=1, sticky="n", padx=10, pady=(0,5))
+        self.knapp2.grid(row=2, column=0, sticky="n", padx=10, pady=3)
         self.knapp3 = customtkinter.CTkButton(master=self.meny, text="Kunder", command=lambda: self.vis_modul(KunderModul))
-        self.knapp3.grid(column=0, row=3, sticky="n", padx=10, pady=(0,5))
+        self.knapp3.grid(row=3, column=0, sticky="n", padx=10, pady=3)
 
-    # Funkjoner for knappene i menyen:
-    def vis_ordrer(self):
-        print("vise ordrer!")
-    def vis_varelager(self):
-        print("vise varelager")
-    def vis_kunder(self):
-        print("vise kunder")
 
 
     
