@@ -25,9 +25,7 @@ class TabellModul:
             width=300,
             height=30,
             corner_radius=5,
-            fg_color="lightgrey",
-            text_color="black",
-            bg_color="white",
+
             placeholder_text="Søk i tabellen...",
             placeholder_text_color="grey",
         )
