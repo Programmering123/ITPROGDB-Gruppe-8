@@ -10,7 +10,7 @@ class App(customtkinter.CTk):
         # Oppretter hovedvinduet:
         super().__init__()
         self.title("Varelageret") # TODO: Finne på et bra navn til programmet.
-        customtkinter.set_default_color_theme("dark-blue") # Setter temaet til dark-blue
+        customtkinter.set_default_color_theme("theme.json") # Setter temaet til dark-blue
         self.iconbitmap("assets/icon.ico")
         self.geometry("1280x720")
         self.grid_columnconfigure(0, weight=0) # Meny venstre side låser denne til 200px. weight=0 gjør at den ikke vokser.
