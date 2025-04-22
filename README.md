@@ -47,8 +47,11 @@ Dette prosjektet har som mål å utvikle en brukervennlig GUI-applikasjon for å
 
 ## 📂 Struktur
 
-Starte Virtual Environment, kjør disse kommandoene: 
+# Starte Virtual Environment, kjør disse kommandoene: 
 Set-ExecutionPolicy Unrestricted -Scope Process
 .\.venv\Scripts\activate
+
+# Innstallerer moduler:
+pip install ./requirements.txt
 
 Kan testes ved å kjøre pip list, for å se om det er riktige pakker innstallert
