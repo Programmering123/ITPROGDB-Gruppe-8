@@ -27,13 +27,13 @@ def tilkobling_database():
 
 # TODO: Opprette flere funksjoner for hver spørring vi trenger (hva slags spørringer må vi ha? Se i oppgaven.)
 # Funksjon for å hentre ordrer: # TODO: Tenker at denne SQLen kan være fin å ha som stored procedure i databasen.
-def hent_ordrer(fra=0, til=20): 
+def hent_ordrer(): 
     try:
         databasen = tilkobling_database() # Koble til databasen
         spørring = databasen.cursor() # Dette er vel en virituell "markør"
         # TODO: Har begrenset spørring på 10(LIMIT), kan ikke ha for mange, programmet henger seg. Finne en dynamisk visning her.
 
-        spørring.execute(f"SELECT OrdreNr, Fornavn, OrdreDato, BetaltDato FROM ordre INNER JOIN kunde ON ordre.KNr = kunde.KNr LIMIT {fra}, {til}") # Spørringen 
+        spørring.execute(f"SELECT OrdreNr, Fornavn, OrdreDato, BetaltDato FROM ordre INNER JOIN kunde ON ordre.KNr = kunde.KNr LIMIT 0,3000") # Spørringen 
         resultat = spørring.fetchall() # Lagrer resultat fra spørring
         return resultat # Returnerer resultatet
     except mysql.connector.Error as err:
@@ -51,6 +51,17 @@ def hent_varelager():
         return resultat # Returnerer resultatet
     except mysql.connector.Error as err:
         print(f"Feil ved henting av varelager: {err}")
+        return []
+    
+def hent_kunder(): #TODO: Korriger denne til å hente en stored procedure i databasen, opprett en stored procedure.
+    try:
+        databasen = tilkobling_database() # Koble til databasen
+        spørring = databasen.cursor() # Dette er en virituell "markør"
+        spørring.execute("SELECT KNr, Fornavn, Etternavn, Adresse, PostNr FROM kunde LIMIT 1000") # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
+        resultat = spørring.fetchall() # Lagrer resultat fra spørring
+        return resultat # Returnerer resultatet
+    except mysql.connector.Error as err:
+        print(f"Feil ved henting av kunder: {err}")
         return []
 
 # Referanse: https://www.w3schools.com/python/python_mysql_select.asp
