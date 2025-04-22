@@ -1,10 +1,19 @@
 # TODO: Lage visning og behandling av kunder Her går det ann å leke seg med customktinker. 
 # Jeg tenker vi kan leke oss litt her først. Husk at riktig moduler må være importert ført. 
-import customtkinter
-class KunderModul:
-    def __init__(self, master):
-        self.master = master
+from api.database import hent_kunder
+from moduler.tabellmodul import TabellModul # Importer TabellModul fra tabellmodul.py
 
-    def vis(self):
-        etikett = customtkinter.CTkLabel(master=self.master, text="Kunder-modul", text_color="black", bg_color="white")
-        etikett.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+class KunderModul(TabellModul):
+    def __init__(self, master):
+        super().__init__(master)
+        # Spørring: KNr, Fornavn, Etternavn, Addresse, PostNr
+        self.kolonner = [
+            "Kundenummer", 
+            "Fornavn", 
+            "Etternavn", 
+            "Adresse", 
+            "Postnummer"
+            ] # TODO: Sjekk ut og hent riktig data.
+
+    def hent_data(self):
+        return hent_kunder()  # Henter kunder fra databasen
