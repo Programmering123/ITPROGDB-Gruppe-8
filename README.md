@@ -52,6 +52,6 @@ Set-ExecutionPolicy Unrestricted -Scope Process
 .\.venv\Scripts\activate
 
 # Innstallerer moduler:
-pip install ./requirements.txt
+pip install -r .\requirements.txt
 
 Kan testes ved å kjøre pip list, for å se om det er riktige pakker innstallert
