@@ -16,4 +16,5 @@ Vi legger inn TODO tree Extension i VSCode for å ha oversikt over hva som må g
 23.04.2025 20:00-20:30
 Gjort visuelle endringer i layout, logo lagt inn, kjør derfor pip install -r ./requirements.txt for å få programmet til å kjøre.. 
 Har endret visning, så nå begynner programmet tabellmodul.py er nydelig bygget. Farger er lagt inn theme.json, og er lagt 
-inn i app.py linje 13 "customtkinter.set_default_color_theme".
+inn i app.py linje 13 "customtkinter.set_default_color_theme". 
+'Rapport tverrfaglig prosjekt.docx' påbegynt og ligger tilgjengelig i Filer 'Tverr PROG_DB Gruppe 8' på Teams. 
