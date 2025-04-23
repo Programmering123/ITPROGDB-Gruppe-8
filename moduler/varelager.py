@@ -20,11 +20,3 @@ class VarelagerModul(TabellModul):
     def hent_data(self):
         return hent_varelager()  # Henter kunder fra databasen
     
-    # Her lager jeg detaljvisning av varen:
-    def visning_detaljer(self, varenummer):
-        # Lager en ny ramme for detaljvisning:
-        detalj_ramme = customtkinter.CTkFrame(master=self.master, fg_color="lightgrey", corner_radius=5)
-        detalj_ramme.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
-        # Setter opp grid for detaljvisning og får den til å ta opp hele høyden og bredden:
-        detalj_ramme.grid_rowconfigure(0, weight=1)
-        detalj_ramme.grid_columnconfigure(0, weight=1)

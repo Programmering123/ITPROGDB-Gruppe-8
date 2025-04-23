@@ -27,7 +27,7 @@ class App(customtkinter.CTk):
         # Oppretter menyen på venstre side: (se https://customtkinter.tomschimansky.com/documentation/widgets/frame for forklaring)
         self.meny = customtkinter.CTkFrame(
             master=self,
-            fg_color="lightgrey",
+          #  fg_color="lightgrey",
             corner_radius=2,
             width=200, # Setter bredden på menyen til 200px
         )
@@ -39,13 +39,13 @@ class App(customtkinter.CTk):
             dark_image=Image.open("assets/icon.ico"), 
             light_image=Image.open("assets/icon.ico"),
             size=(140, 140) # 140x140px tilsvarer bredden på knappene.
-        )
+        )# TODO: Finne en annen måte å integrere ikonet på, enn å bruke en knapp.
         self.bildeknapp = customtkinter.CTkButton(
             master=self.meny,
             image=self.bilde,
             width=140,
             height=140,
-            fg_color="lightgrey",
+            fg_color="grey",
             hover_color="lightgrey",
             text="",
         ) 
@@ -67,7 +67,7 @@ class App(customtkinter.CTk):
         self.visningsrute = customtkinter.CTkFrame(
             master=self,
             fg_color="white",
-            corner_radius=2
+            corner_radius=0
             )
         self.visningsrute.grid(row=0, column=1, sticky="nsew", padx=0, pady=0)
         # Setter opp grid for visningsruten og får den til å ta opp hele høyden og bredden:

@@ -15,8 +15,31 @@ class TabellModul:
         self.vist_data = self.data # Kopierer dataene til vist_data
         self.antall_sider = len(self.data) // 20 + 1 # Beregner antall sider basert på antall rader i varelageret
 
+        # Lager 2 rammer for å kunne vise detaljer i en annen ramme:
+        # Ramme for å vise tabelllisten:
+        tabell_visning_ramme = customtkinter.CTkFrame(
+            master=self.master, 
+          #  fg_color="white", 
+            corner_radius=0
+            ) # Lager en ramme for tabellvisning
+        # tabell_visning_ramme.grid(row=0, column=0, sticky="nsew", padx=10, pady=10) # Plassering av ramme
+        tabell_visning_ramme.grid(row=0, column=0, sticky="nsew") # Plassering av ramme
+        # Ramme for å vise detaljer:
+        detalj_visning_ramme = customtkinter.CTkFrame(
+            master=self.master, 
+            # fg_color="white",
+            corner_radius=0
+            ) # Lager en ramme for detaljvisning
+        # detalj_visning_ramme.grid(row=0, column=0, sticky="nsew", padx=10, pady=10) # Plassering av ramme
+        detalj_visning_ramme.grid(row=0, column=0, sticky="nsew") # Plassering av ramme
+        self.tabell_visning_ramme = tabell_visning_ramme # Setter tabell_visning_ramme til å være lik tabell_visning_ramme
+        self.detalj_visning_ramme = detalj_visning_ramme # Setter detalj_visning_ramme til å være lik detalj_visning_ramme
+        detalj_visning_ramme.lower(tabell_visning_ramme) # Lagrer detaljvisningrammen i bakgrunnen
         # Øvre meny, Oppsett:
-        meny_ramme = customtkinter.CTkFrame(master=self.master, fg_color="lightgrey") # Lager en ramme for øvre meny
+        meny_ramme = customtkinter.CTkFrame(
+            master=tabell_visning_ramme, 
+            # fg_color="lightgrey"
+            ) # Lager en ramme for øvre meny
         meny_ramme.grid(row=0, column=0, sticky="nwe", padx=10, pady=10) # Plassering av ramme
 
         # Øvre meny, Søkefelt:
@@ -29,24 +52,28 @@ class TabellModul:
             placeholder_text="Søk i tabellen...",
             placeholder_text_color="grey",
         )
-        leteord.grid(row=0, column=0, sticky="nw", padx=10, pady=10) # Plassering av søkefelt
-        leteord.bind("<Return>", lambda event: self.søk_i_data(leteord.get())) # Binder Enter-tasten til søkefunksjonen
+        leteord.grid(row=0, column=0, sticky="nw", padx=10, pady=10)                            # Plassering av søkefelt
+        leteord.bind("<Return>", lambda event: self.søk_i_data(leteord.get()))                  # Binder Enter-tasten til søkefunksjonen
         # Øvre meny, Søkeknapp:
         knapp_søk = customtkinter.CTkButton(
             master=meny_ramme,
             text="Søk",
             command=lambda: self.søk_i_data(leteord.get()), 
         )
-        knapp_søk.grid(row=0, column=1, sticky="nw", padx=10, pady=10) # Plassering av søkeknapp
+        knapp_søk.grid(row=0, column=1, sticky="nw", padx=10, pady=10)                          # Plassering av søkeknapp
 
         # Tabell ramme, Oppsett:
-        tabell_ramme = customtkinter.CTkFrame(master=self.master, fg_color="lightgrey", corner_radius=5)
+        tabell_ramme = customtkinter.CTkFrame(
+            master=tabell_visning_ramme, 
+            # fg_color="lightgrey", 
+            corner_radius=5
+            )
         tabell_ramme.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
 
-        # # Setter opp grid for tabellen og får den til å ta opp hele høyden og bredden:# TODO: Liker ikke helt denne. Se om vi kan gjøre denne på annen metode
-        self.master.grid_rowconfigure(0, weight=0) # Låser ramme_meny
-        self.master.grid_rowconfigure(1, weight=1)  # Fleksibel høyde for tabellen
-        self.master.grid_columnconfigure(0, weight=1) # Fleksibel bredde for tabellen
+        # # Setter opp grid for tabellen og får den til å ta opp hele høyden og bredden:
+        tabell_visning_ramme.grid_rowconfigure(0, weight=0)         # Låser ramme_meny
+        tabell_visning_ramme.grid_rowconfigure(1, weight=1)         # Fleksibel høyde for tabellen
+        tabell_visning_ramme.grid_columnconfigure(0, weight=1)      # Fleksibel bredde for tabellen
         # Setter opp grid for tabellen og får den til å ta opp hele høyden og bredden:
         tabell_ramme.grid_rowconfigure(0, weight=1)
         tabell_ramme.grid_columnconfigure(0, weight=1)
@@ -58,8 +85,8 @@ class TabellModul:
         stil.configure("Treeview.Heading", font=("Helvetica", 14, "bold"), background="white", foreground="black")
         # Setter opp kolonnene i tabellen:
         self.tree = ttk.Treeview(master=tabell_ramme, columns=self.kolonner, show="headings", height="100")
-        #customtkinter.CTkTreeview(master=self.master, columns=kolonner, show="headings", height=20)
         self.tree.grid(row=0, column=0, sticky="new", padx=10, pady=10)
+        self.tree.bind("<Double-1>", self.vis_detaljer) # Binder dobbeltklikk til å velge rad
         
         
 
@@ -74,8 +101,8 @@ class TabellModul:
 
         # Bunn meny, oppsett:
         navigasjon_ramme = customtkinter.CTkFrame(
-            master=self.master, 
-            fg_color="lightgrey", 
+            master=tabell_visning_ramme, 
+            # fg_color="lightgrey", 
             corner_radius=5
         )
         # Valg av antall rader : Her skal vi sende antall viste sider til oppdater_tabell funksjonen.
@@ -124,6 +151,11 @@ class TabellModul:
     def hent_data(self):
         """Henter data fra databasen. Denne funksjonen må implementeres i SubClass."""
         raise NotImplementedError("Denne funksjonen må implementeres i SubClass.")
+    
+    # blank definering av detaljvisning, må implementeres i SubClass:
+    def vis_detaljer(self, data):
+        """Viser detaljer for valgt rad. Denne funksjonen må implementeres i SubClass."""
+        raise NotImplementedError("Denne funksjonen må implementeres i SubClass.")
 
     # Søkefunksjon: 
     def søk_i_data(self, søk):
@@ -147,10 +179,7 @@ class TabellModul:
 
     # Funksjon for å endre side la oss se.... 
     def endre_side(self, retning):
-        # Funksjon for å endre side i tabellen:
-        print("Endrer side", retning)
-        ny_side = self.aktuell_side + retning
-        print("Ny side:", ny_side)
+        ny_side = self.aktuell_side + retning # Ønsket side
         # Sjekker om ny side er innenfor gyldig område:
         if ny_side < 1: # Hvis det blir valgt mindre tall enn 1, så setter vi det til 1
             ny_side = 1
