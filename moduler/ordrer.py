@@ -3,7 +3,7 @@
 # Kunne velge en spesifikk ordre og vise hva slags varer, antall av hver vare som har blitt solgt, 
 # pris pr.vare, pris ganger antall, kunde m/navn og adresse og total pris
 import customtkinter
-from api.database import hent_ordrer
+from api.database import hent_ordrer, hent_spesifikk_ordre, hent_spesifikk_kunde, hent_ordrelinjer
 from moduler.tabellmodul import TabellModul # Importer TabellModul fra tabellmodul.py
 
 class OrdrerModul(TabellModul):
@@ -13,8 +13,9 @@ class OrdrerModul(TabellModul):
         self.kolonner = [
             "Ordrenummer",
             "Kunde",
-            "Dato",
-            "Status"
+            "Ordre Dato",
+            "Betalt Dato",
+            "Kunde ID"
             ] # TODO: Sjekk ut og hent riktig data.
 
     def hent_data(self):
@@ -26,7 +27,16 @@ class OrdrerModul(TabellModul):
         valgt_ordre = self.tree.focus()
         verdier = self.tree.item(valgt_ordre)["values"]
         if verdier:
+            ordre_id = verdier[0] # Henter ordrenummeret fra den valgte ordren
+            ordre_fornavn = verdier[1] # Henter kundenavnet fra den valgte ordren
+            ordre_dato = verdier[2] # Henter ordredatoen fra den valgte ordren
+            ordre_betalt = verdier[3] # Henter betalt datoen fra den valgte ordren
+            ordre_kunde_id = verdier[4] # Henter kundenummeret fra den valgte ordren
+            ordrelinjer = hent_ordrelinjer(ordre_id) # Henter ordrelinjene for den valgte ordren
+            kundeinfo = hent_spesifikk_kunde(ordre_kunde_id) # Henter kundeinfo for den valgte ordren
+       #     hent_spesifikk_ordre(valgt_ordre)
             # Henter detaljene for den valgte ordren:
+
             print(f"Valgt ordre: {verdier}")
         if self.detalj_visning_ramme:
             self.detalj_visning_ramme.lift(self.tabell_visning_ramme) # Setter detaljvisningrammen i forgrunnen
@@ -69,13 +79,51 @@ class OrdrerModul(TabellModul):
             )
             label_ordrenummer.grid(row=0,column=0,sticky="nw", padx=10, pady=10)
 
-            # label for kundeinfo:
-            label_kundeinfo = customtkinter.CTkLabel(
-                master=ramme_kundeinfo,
-                text=f"Kunde: {verdier[1]}",
-                font=("Arial", 16, "bold"),
-            )
-            label_kundeinfo.grid(row=0,column=0,sticky="nw", padx=10, pady=10)
+            if(kundeinfo != None):
+                print(f"Kundeinfo: {kundeinfo}")
+                # Spørring: "SELECT kunde.KNr, kunde.Fornavn, kunde.Etternavn, kunde.Adresse, kunde.PostNr, poststed.Poststed FROM `kunde` INNER JOIN `poststed` ON `kunde.PostNr` = `poststed.PostNr` WHERE kunde.Knr = {kunde_id} LIMIT=1"
+                kunde_id = kundeinfo[0] # Henter kundenummeret fra den valgte ordren
+                kunde_fornavn = kundeinfo[1] # Henter kundenavnet fra den valgte ordren
+                kunde_etternavn = kundeinfo[2] # Henter kundenavnet fra den valgte ordren
+                kunde_adresse = kundeinfo[3] # Henter kundenavnet fra den valgte ordren
+                kunde_postnr = kundeinfo[4] # Henter kundenavnet fra den valgte ordren
+                kunde_poststed = kundeinfo[5] # Henter kundenavnet fra den valgte ordren
+                # label for kunde_id:
+                label_kunde_id = customtkinter.CTkLabel(
+                    master=ramme_kundeinfo,
+                    text=f"Kunde ID: {kunde_id}",
+                    font=("Arial", 16, "bold"),
+                )
+                label_kunde_id.grid(row=0,column=0,sticky="nw", padx=10, pady=10)
+                # label for kundenavn:
+                label_kundenavn = customtkinter.CTkLabel(
+                    master=ramme_kundeinfo,
+                    text=f"Kunde: {kunde_fornavn} {kunde_etternavn}",
+                    font=("Arial", 16, "bold"),
+                )
+                label_kundenavn.grid(row=1,column=0,sticky="nw", padx=10, pady=10)
+                # label for kundeadresse:
+                label_kundeadresse = customtkinter.CTkLabel(
+                    master=ramme_kundeinfo,
+                    text=f"Adresse: {kunde_adresse}",
+                    font=("Arial", 16, "bold"),
+                )
+                label_kundeadresse.grid(row=2,column=0,sticky="nw", padx=10, pady=10)
+                # label for kundepostnr og poststed:
+                label_kundepostnr = customtkinter.CTkLabel(
+                    master=ramme_kundeinfo,
+                    text=f"Postnummer: {kunde_postnr} {kunde_poststed}",
+                    font=("Arial", 16, "bold"),
+                )
+                label_kundepostnr.grid(row=3,column=0,sticky="nw", padx=10, pady=10)
+            else:
+                label_ingen_kunde = customtkinter.CTkLabel(
+                    master=ramme_kundeinfo,
+                    text="Kundeinfo ikke tilgjengelig",
+                    font=("Arial", 16, "bold"),
+                )
+                label_ingen_kunde.grid(row=0,column=0,sticky="nw", padx=10, pady=10)
+
 
             # label for dato:
             label_dato = customtkinter.CTkLabel(
@@ -83,8 +131,10 @@ class OrdrerModul(TabellModul):
                 text=f"Ordredato: {verdier[2]}",
                 font=("Arial", 16, "bold"),
             )
-            label_dato.grid(row=0,column=0,sticky="new", padx=10, pady=10)
-
+            label_dato.grid(row=0,column=0,sticky="nw", padx=10, pady=10)
+            
+            if ordrelinjer:
+                pass
         
     def lukk_detaljer(self):
         if self.detalj_visning_ramme:
