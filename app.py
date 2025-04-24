@@ -10,7 +10,8 @@ class App(customtkinter.CTk):
         # Oppretter hovedvinduet:
         super().__init__()
         self.title("Varelageret") # TODO: Finne på et bra navn til programmet.
-        customtkinter.set_default_color_theme("theme.json") # Henter farger fra theme.json filen, der er fargene definert. 
+        customtkinter.set_default_color_theme("theme.json") # Henter farger fra theme.json filen, der er fargene definert.
+        customtkinter.set_appearance_mode("light") #Tvinger programmet til å kjøre lys modus 
         self.iconbitmap("assets/icon.ico")
         self.geometry("1280x720")
         self.grid_columnconfigure(0, weight=0) # Meny venstre side låser denne til 200px. weight=0 gjør at den ikke vokser.
@@ -27,7 +28,7 @@ class App(customtkinter.CTk):
         # Oppretter menyen på venstre side: (se https://customtkinter.tomschimansky.com/documentation/widgets/frame for forklaring)
         self.meny = customtkinter.CTkFrame(
             master=self,
-          #  fg_color="lightgrey",
+            fg_color="lightgrey", #tvinger grå sidemeny venstre side
             corner_radius=2,
             width=200, # Setter bredden på menyen til 200px
         )
@@ -45,8 +46,8 @@ class App(customtkinter.CTk):
             image=self.bilde,
             width=140,
             height=140,
-            fg_color="grey",
-            hover_color="lightgrey",
+            fg_color="lightgrey", #endret farge til å matche grå sidemeny venstre side
+            hover_color="lightgrey", #endret farge til å matche grå sidemeny venstre side
             text="",
         ) 
         self.bildeknapp.grid(row=0, column=0, sticky="n", padx=10, pady=10) 

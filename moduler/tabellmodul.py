@@ -19,7 +19,7 @@ class TabellModul:
         # Ramme for å vise tabelllisten:
         tabell_visning_ramme = customtkinter.CTkFrame(
             master=self.master, 
-          #  fg_color="white", 
+            #TODO: fg_color="white", korrigert i linje 11 i theme.json
             corner_radius=0
             ) # Lager en ramme for tabellvisning
         # tabell_visning_ramme.grid(row=0, column=0, sticky="nsew", padx=10, pady=10) # Plassering av ramme
@@ -27,7 +27,7 @@ class TabellModul:
         # Ramme for å vise detaljer:
         detalj_visning_ramme = customtkinter.CTkFrame(
             master=self.master, 
-            # fg_color="white",
+            #TODO: fg_color="white", Korrigert i linje 11 i theme.json
             corner_radius=0
             ) # Lager en ramme for detaljvisning
         # detalj_visning_ramme.grid(row=0, column=0, sticky="nsew", padx=10, pady=10) # Plassering av ramme
@@ -38,7 +38,7 @@ class TabellModul:
         # Øvre meny, Oppsett:
         meny_ramme = customtkinter.CTkFrame(
             master=tabell_visning_ramme, 
-            # fg_color="lightgrey"
+            ##TODO: fg_color="lightgrey", korrigert i linje 11 i theme.json
             ) # Lager en ramme for øvre meny
         meny_ramme.grid(row=0, column=0, sticky="nwe", padx=10, pady=10) # Plassering av ramme
 
@@ -48,7 +48,6 @@ class TabellModul:
             width=300,
             height=30,
             corner_radius=5,
-
             placeholder_text="Søk i tabellen...",
             placeholder_text_color="grey",
         )
@@ -65,7 +64,7 @@ class TabellModul:
         # Tabell ramme, Oppsett:
         tabell_ramme = customtkinter.CTkFrame(
             master=tabell_visning_ramme, 
-            # fg_color="lightgrey", 
+            #TODO: fg_color="lightgrey", korrigert farge L11 i theme.json
             corner_radius=5
             )
         tabell_ramme.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
@@ -102,7 +101,7 @@ class TabellModul:
         # Bunn meny, oppsett:
         navigasjon_ramme = customtkinter.CTkFrame(
             master=tabell_visning_ramme, 
-            # fg_color="lightgrey", 
+            #TODO: fg_color="lightgrey", korrigert i linje 11 i theme.json 
             corner_radius=5
         )
         # Valg av antall rader : Her skal vi sende antall viste sider til oppdater_tabell funksjonen.
@@ -110,7 +109,7 @@ class TabellModul:
             master=navigasjon_ramme,
             text="Vis antall:",
             text_color="black",
-            bg_color="lightgrey",
+            #TODO:Deaktivert for testing bg_color="lightgrey", satt transparent i linje 26 theme.json
         )
         self.knapp_antall_var = customtkinter.StringVar(value="20") # Setter default verdi til 10
         knapp_antall = customtkinter.CTkOptionMenu(

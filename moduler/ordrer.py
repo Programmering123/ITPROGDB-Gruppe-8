@@ -67,7 +67,7 @@ class OrdrerModul(TabellModul):
             # Knapp for å lukke detaljvisningrammen:
             knapp_lukk = customtkinter.CTkButton(
                 master=ramme_header,
-                text="X",
+                text="Lukk",
                 command=self.lukk_detaljer,
             )
             knapp_lukk.grid(row=0,column=2,sticky="w", padx=10, pady=10) # Plassering av lukkeknapp
