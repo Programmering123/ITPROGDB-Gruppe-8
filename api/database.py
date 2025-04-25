@@ -5,6 +5,7 @@ import mysql.connector
 from dotenv import load_dotenv, dotenv_values
 import os
 from pathlib import Path
+from typing import Dict, Any, Optional
 
 # Henter variabler fra .env filen
 dotenv_path = Path('secrets.env')
@@ -40,17 +41,20 @@ def hent_ordrer():
     except mysql.connector.Error as err:
         print(f"Feil ved henting av ordrelinjer: {err}")
         return []
-# Funksjon for å hente data fra spesifikk ordre:
-def hent_spesifikk_ordre(ordre_id):
+# Funksjon for å hente all data fra spesifikk ordre:
+def hent_spesifikk_ordre(ordre_id: int) -> Optional[Dict[str, Any]]:
     if(ordre_id != None):
         try:
             databasen = tilkobling_database() # Koble til databasen
             spørring = databasen.cursor() # Dette er en virituell "markør"
-            spørring.execute(f"SELECT VNr, Betegnelse, Antall, PrisPrEnhet FROM ordrelinje WHERE OrdreNr = {ordre_id}") # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
-            resultat = spørring.fetchall() # Lagrer resultat fra spørring
+            spørring.execute(f"SELECT OrdreNr, OrdreDato, SendtDato, BetaltDato, KNr FROM ordre WHERE OrdreNr = {ordre_id}") # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
+            resultat = spørring.fetchone() # Lagrer resultat fra spørring
+            if resultat: # Gjør om resultatet til object <3
+                kolonner = [beskrivelse[0] for beskrivelse in spørring.description] # Henter kolonnebeskrivelser
+                resultat = dict(zip(kolonner, resultat)) # Lager en dict av resultatet med kolonnenavn som nøkler
             return resultat # Returnerer resultatet
         except mysql.connector.Error as err:
-            print(f"Feil ved henting av ordrelinjer: {err}")
+            print(f"Feil ved henting av ordredata: {err}")
             return []
     else:
         print("Ingen ordre valgt.")
