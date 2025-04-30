@@ -20,3 +20,11 @@ Gjort visuelle endringer i layout, logo lagt inn, kjør derfor pip install -r ./
 Har endret visning, så nå begynner programmet tabellmodul.py er nydelig bygget. Farger er lagt inn theme.json, og er lagt 
 inn i app.py linje 13 "customtkinter.set_default_color_theme". 
 'Rapport tverrfaglig prosjekt.docx' påbegynt og ligger tilgjengelig i Filer 'Tverr PROG_DB Gruppe 8' på Teams. 
+
+30.04.2025 20:00-21:20
+Gjennomgang av GUI og funksjoner, begynner å komme oss innenfor det vi ønsker å oppnå. 
+Diskutert hvordan vi kan optimalisere koden og gjøre den mer modulær. 
+Fordelt oppgaver blandt oss. JA ser på Total Sum i ordredetaljer, TT ser på en hovedskjerm og 
+en trykkefunksjon for å komme tilbake til hovedside. JEL ser på videre av ny_kunde/rediger kunde.
+Planlagt å implementere en ny funksjon for å håndtere brukerinnstillinger i app.py. 
+Avsluttet med å oppdatere fremdriftsplanen på GitHub.
