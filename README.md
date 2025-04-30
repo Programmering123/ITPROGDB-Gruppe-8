@@ -55,3 +55,34 @@ Set-ExecutionPolicy Unrestricted -Scope Process
 pip install -r .\requirements.txt
 
 Kan testes ved å kjøre pip list, for å se om det er riktige pakker innstallert
+
+
+# Database SP(Store Procedure)
+## Enten kjør som spørring :
+DELIMITER //
+CREATE PROCEDURE LeggTilKunde(
+    IN p_fornavn VARCHAR(255),
+    IN p_etternavn VARCHAR(255),
+    IN p_adresse VARCHAR(255),
+    IN p_postnr VARCHAR(10)
+)
+BEGIN
+    -- Hvis du ikke bruker AUTO_INCREMENT for KNr:
+    SELECT MAX(KNr) INTO @siste_knr FROM Kunder;
+    SET @ny_knr = IFNULL(@siste_knr, 0) + 1;
+    INSERT INTO kunde (KNr, Fornavn, Etternavn, Adresse, PostNr) VALUES (@ny_knr, p_fornavn, p_etternavn, p_adresse, p_postnr);
+    -- Hvis du bruker AUTO_INCREMENT, trenger du ikke hente KNr her.
+END //
+DELIMITER ;
+## Eller legg inn i SP i MySQL Workbench:
+CREATE DEFINER=`root`@`localhost` PROCEDURE `LeggTilKunde`(
+    IN p_fornavn VARCHAR(255),
+    IN p_etternavn VARCHAR(255),
+    IN p_adresse VARCHAR(255),
+    IN p_postnr VARCHAR(10)
+)
+BEGIN
+    SELECT MAX(KNr) INTO @siste_knr FROM Kunder;
+    SET @ny_knr = IFNULL(@siste_knr, 0) + 1;
+    INSERT INTO kunde (KNr, Fornavn, Etternavn, Adresse, PostNr) VALUES (@ny_knr, p_fornavn, p_etternavn, p_adresse, p_postnr);
+END
