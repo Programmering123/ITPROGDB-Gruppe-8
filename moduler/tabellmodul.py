@@ -36,15 +36,18 @@ class TabellModul:
         self.detalj_visning_ramme = detalj_visning_ramme # Setter detalj_visning_ramme til å være lik detalj_visning_ramme
         detalj_visning_ramme.lower(tabell_visning_ramme) # Lagrer detaljvisningrammen i bakgrunnen
         # Øvre meny, Oppsett:
-        meny_ramme = customtkinter.CTkFrame(
+        # Lager en ramme for øvre meny:
+        self.meny_ramme = customtkinter.CTkFrame(
             master=tabell_visning_ramme, 
-            ##TODO: fg_color="lightgrey", korrigert i linje 11 i theme.json
-            ) # Lager en ramme for øvre meny
-        meny_ramme.grid(row=0, column=0, sticky="nwe", padx=10, pady=10) # Plassering av ramme
+            ) 
+        self.meny_ramme.grid(row=0, column=0, sticky="new", padx=10, pady=10) # Plassering av ramme
+        self.meny_ramme.grid_columnconfigure(0, weight=0) # Sentrerer innhold
+        self.meny_ramme.grid_columnconfigure(1, weight=0) # Sentrerer innhold
+        self.meny_ramme.grid_columnconfigure(2, weight=1) # Sentrerer innhold
 
         # Øvre meny, Søkefelt:
         leteord = customtkinter.CTkEntry(
-            master=meny_ramme,
+            master=self.meny_ramme,
             width=300,
             height=30,
             corner_radius=5,
@@ -55,7 +58,7 @@ class TabellModul:
         leteord.bind("<Return>", lambda event: self.søk_i_data(leteord.get()))                  # Binder Enter-tasten til søkefunksjonen
         # Øvre meny, Søkeknapp:
         knapp_søk = customtkinter.CTkButton(
-            master=meny_ramme,
+            master=self.meny_ramme,
             text="Søk",
             command=lambda: self.søk_i_data(leteord.get()), 
         )
@@ -101,7 +104,6 @@ class TabellModul:
         # Bunn meny, oppsett:
         navigasjon_ramme = customtkinter.CTkFrame(
             master=tabell_visning_ramme, 
-            #TODO: fg_color="lightgrey", korrigert i linje 11 i theme.json 
             corner_radius=5
         )
         # Valg av antall rader : Her skal vi sende antall viste sider til oppdater_tabell funksjonen.
@@ -109,7 +111,6 @@ class TabellModul:
             master=navigasjon_ramme,
             text="Vis antall:",
             text_color="black",
-            #TODO:Deaktivert for testing bg_color="lightgrey", satt transparent i linje 26 theme.json
         )
         self.knapp_antall_var = customtkinter.StringVar(value="20") # Setter default verdi til 10
         knapp_antall = customtkinter.CTkOptionMenu(
@@ -146,6 +147,13 @@ class TabellModul:
         knapp_nav_bak.grid(row=0, column=2, sticky="e", padx=10, pady=10)
         self.side_indikator.grid(row=0, column=3, sticky="ew", padx=10, pady=10)
         knapp_nav_frem.grid(row=0, column=4, sticky="w", padx=10, pady=10)
+
+        self.ekstra_funksjoner() # Kaller ekstra funksjoner for SubClass
+
+    def ekstra_funksjoner(self):
+        """Ekstra funksjoner for SubClass. Denne funksjonen må implementeres i SubClass."""
+        pass
+        raise NotImplementedError("Denne funksjonen må implementeres i SubClass.")
     
     def hent_data(self):
         """Henter data fra databasen. Denne funksjonen må implementeres i SubClass."""

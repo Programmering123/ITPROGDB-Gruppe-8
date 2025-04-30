@@ -125,6 +125,20 @@ def hent_spesifikk_kunde(kunde_id):
     else:
         print("Ingen kunder valgt.")
         return []
+    
+# Funksjon for å legge til ny kunde:
+def legg_til_kunde(fornavn, etternavn, adresse, postnr):
+    # TODO: Burdre sikkert sikre riktig data og sjekke at det ikke er duplikater i databasen.
+    try:
+        databasen = tilkobling_database() # Koble til databasen
+        spørring = databasen.cursor() # Dette er en virituell "markør"
+        spørring.callproc('LeggTilKunde', (fornavn, etternavn, adresse, postnr))
+        databasen.commit() # Lagre endringer i databasen
+    except mysql.connector.Error as err:
+        print(f"Feil ved kall til stored procedure: {err}")
+    finally:
+        if databasen:
+            databasen.close()
 
 # Referanse: https://www.w3schools.com/python/python_mysql_select.asp
 # print(mydb)

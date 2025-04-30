@@ -13,6 +13,8 @@ Kommentert litt kode i app.py og diskutert litt rundt GUI.
 09.04.2025 20:00-20:30
 Vi legger inn TODO tree Extension i VSCode for å ha oversikt over hva som må gjøres hvor..  https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree 
 
+
+
 23.04.2025 20:00-20:30
 Gjort visuelle endringer i layout, logo lagt inn, kjør derfor pip install -r ./requirements.txt for å få programmet til å kjøre.. 
 Har endret visning, så nå begynner programmet tabellmodul.py er nydelig bygget. Farger er lagt inn theme.json, og er lagt 
