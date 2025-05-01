@@ -82,7 +82,7 @@ CREATE DEFINER=`root`@`localhost` PROCEDURE `LeggTilKunde`(
     IN p_postnr VARCHAR(10)
 )
 BEGIN
-    SELECT MAX(KNr) INTO @siste_knr FROM Kunder;
+    SELECT MAX(KNr) INTO @siste_knr FROM Kunde;
     SET @ny_knr = IFNULL(@siste_knr, 0) + 1;
     INSERT INTO kunde (KNr, Fornavn, Etternavn, Adresse, PostNr) VALUES (@ny_knr, p_fornavn, p_etternavn, p_adresse, p_postnr);
 END
