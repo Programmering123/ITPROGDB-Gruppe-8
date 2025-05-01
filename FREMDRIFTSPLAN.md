@@ -17,9 +17,9 @@ KG - Konstantina Goteva
 
 13.04.2025  - Database API
 
-20.04.2025  - Logikk
+20.04.2025  - Logikk 
 
-27.04.2025  - Milepæl - Fungerende BETA. 
+27.04.2025  - Milepæl - Fungerende BETA. ☑️
 
 04.05.2025  - Sikkerhetsteste alt - Har vi nok sikkerhet?
 
