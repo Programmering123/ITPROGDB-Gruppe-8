@@ -10,6 +10,7 @@ import customtkinter
 from api.database import hent_kunder, legg_til_kunde # Importer funksjoner for å hente kunder og legge til kunder fra databasen
 from moduler.tabellmodul import TabellModul # Importer TabellModul fra tabellmodul.py
 
+""" Her lager vi en kunder modul som arver fra TabellModul."""
 class KunderModul(TabellModul):
     def __init__(self, master):
         super().__init__(master)
@@ -132,7 +133,8 @@ class KunderModul(TabellModul):
             etikett_input_postnr.grid(row=3, column=0, sticky="nsew", padx=10, pady=10)
             input_postnr.grid(row=3, column=1, sticky="nsew", padx=10, pady=10)
             knapp_opprett.grid(row=4, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
-
+            
+    
     def opprett_kunde_db(self, fornavn: str, etternavn: str, adresse: str, postnr: int):
         """Oppretter en ny kunde i databasen. TODO: Legg til databasefunksjon."""
         print(f"Oppretter ny kunde: {fornavn} {etternavn}, {adresse}, {postnr}")

@@ -117,6 +117,7 @@ def hent_spesifikk_kunde(kunde_id):
             databasen = tilkobling_database() # Koble til databasen
             spørring = databasen.cursor() # Dette er en virituell "markør"
             spørring.execute(f"SELECT kunde.KNr, kunde.Fornavn, kunde.Etternavn, kunde.Adresse, kunde.PostNr, poststed.Poststed FROM kunde INNER JOIN poststed ON kunde.PostNr = poststed.PostNr WHERE kunde.Knr = {kunde_id} LIMIT 1") # TODO: Stored procedure i stedet for spørring
+            
             resultat = spørring.fetchone() # Lagrer resultat fra spørring
             return resultat # Returnerer resultatet
         except mysql.connector.Error as err:
@@ -126,7 +127,7 @@ def hent_spesifikk_kunde(kunde_id):
         print("Ingen kunder valgt.")
         return []
     
-# Funksjon for å legge til ny kunde:
+# Funksjon for å legge til ny kunde: # TODO: Opprett sikkerhetssjekker for dataen
 def legg_til_kunde(fornavn, etternavn, adresse, postnr):
     # TODO: Burdre sikkert sikre riktig data og sjekke at det ikke er duplikater i databasen.
     try:

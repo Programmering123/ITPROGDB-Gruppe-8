@@ -152,9 +152,7 @@ class TabellModul:
 
     def ekstra_funksjoner(self):
         """Ekstra funksjoner for SubClass. Denne funksjonen må implementeres i SubClass."""
-        pass
-        raise NotImplementedError("Denne funksjonen må implementeres i SubClass.")
-    
+        pass    
     def hent_data(self):
         """Henter data fra databasen. Denne funksjonen må implementeres i SubClass."""
         raise NotImplementedError("Denne funksjonen må implementeres i SubClass.")
