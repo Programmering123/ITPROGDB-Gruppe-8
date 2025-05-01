@@ -10,7 +10,7 @@ import customtkinter
 from api.database import hent_kunder, legg_til_kunde # Importer funksjoner for å hente kunder og legge til kunder fra databasen
 from moduler.tabellmodul import TabellModul # Importer TabellModul fra tabellmodul.py
 
-""" Her lager vi en kunder modul som arver fra TabellModul."""
+""" Her lager vi en kunde modul som arver fra TabellModul."""
 class KunderModul(TabellModul):
     def __init__(self, master):
         super().__init__(master)
