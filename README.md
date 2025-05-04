@@ -56,6 +56,10 @@ pip install -r .\requirements.txt
 
 Kan testes ved å kjøre pip list, for å se om det er riktige pakker innstallert
 
+# Definering av variabler og typebeskrivelse:
+variabler prøver vi å definere som <hva>_<navn>. F.eks. en knapp til kunder : knapp_kunder = customtkinter.CTkButton()...
+Også fint å prøve å typebeskrive funksjoner og variabler. F.eks. tekst_knapp_kunder: str = "Kunder". Her er det definert at tekst_knapp_kunder er en string, Kan også definere for funksjoner: def funksjon(streng: str)-> bool: Her får man tydelig tilbakemelding at denne funksjonen returnerer en Boolean(True/False). 
+Standard Font i programmet er "Roboto".
 
 # Database SP(Store Procedure)
 ## Enten kjør som spørring :

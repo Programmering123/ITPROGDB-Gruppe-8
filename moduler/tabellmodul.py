@@ -82,12 +82,18 @@ class TabellModul:
         # Velger å bruke Tkinter sin Treeview for å lage tabellen, da den er vesentlig raskere enn Ctk sin.
         # Pynter litt på tabellen:
         stil = ttk.Style()
-        stil.configure("Treeview", font=("Helvetica", 12), background="white", foreground="black", highlightthickness=1, bordercolor="grey")
-        stil.configure("Treeview.Heading", font=("Helvetica", 14, "bold"), background="white", foreground="black")
+        stil.configure("Treeview", font=("Roboto", 12), background="white", foreground="black", highlightthickness=1, bordercolor="grey")
+        stil.configure("Treeview.Heading", font=("Roboto", 14, "bold"), background="white", foreground="black")
         # Setter opp kolonnene i tabellen:
         self.tree = ttk.Treeview(master=tabell_ramme, columns=self.kolonner, show="headings", height="100")
         self.tree.grid(row=0, column=0, sticky="new", padx=10, pady=10)
-        self.tree.bind("<Double-1>", self.vis_detaljer) # Binder dobbeltklikk til å velge rad
+        self.tree.bind(
+            "<Double-1>",                                                       # Binder dobbeltklikk
+            lambda event: self.vis_detaljer(                                    # Bruker en lambda funksjon som peker til funksjon
+                self.tree.item(self.tree.focus())['values']                     # Sende verdiene til valgt rad som argument
+            )
+        ) # Binder vis detaljer funksjon til dobbelklikk på rader
+        # TODO: Også ha en mulighet for å velge en rad og ha en knapp i meny_ramme som er "Vis detaljer" som blir gyldig ved valg av rad?
         
         
 
@@ -147,7 +153,7 @@ class TabellModul:
         self.side_indikator.grid(row=0, column=3, sticky="ew", padx=10, pady=10)
         knapp_nav_frem.grid(row=0, column=4, sticky="w", padx=10, pady=10)
 
-        self.ekstra_funksjoner() # Kaller ekstra funksjoner for SubClass
+        self.ekstra_funksjoner() # Kaller ekstra funksjoner for spesifikasjoner i SubClass
 
     def ekstra_funksjoner(self):
         """Ekstra funksjoner for SubClass. Denne funksjonen må implementeres i SubClass."""

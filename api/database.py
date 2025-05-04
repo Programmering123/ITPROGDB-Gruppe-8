@@ -5,7 +5,7 @@ import mysql.connector
 from dotenv import load_dotenv, dotenv_values
 import os
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union
 
 # Henter variabler fra .env filen
 dotenv_path = Path('secrets.env')
@@ -140,6 +140,168 @@ def legg_til_kunde(fornavn, etternavn, adresse, postnr):
     finally:
         if databasen:
             databasen.close()
+
+def hent_postnr():
+    """
+    Funksjon for å hente postnr fra databasen
+    Returns:
+        List of postnr
+    """
+    try:
+        databasen = tilkobling_database() # Koble til databasen
+        spørring = databasen.cursor() # Dette er en virituell "markør"
+        spørring.execute("SELECT PostNr FROM poststed") # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
+        resultat = spørring.fetchall() # Lagrer resultat fra spørring
+        return [postnr[0] for postnr in resultat] # Returnerer resultatet som liste med bare postnr
+    except mysql.connector.Error as err:
+        print(f"Feil ved henting av postnr: {err}")
+        return []
+
+def kunde_validering(
+        kundenummer: int,
+        fornavn: str,
+        etternavn: str,
+        adresse: str,
+        postnr: int
+)->tuple[int, str, str, str, int]:                                              # typebeskrivelse på return
+    """
+    Funksjon for å validere kundedata
+    Args:
+        kundenummer: int mer enn 0 og maks 10 desimaler
+        fornavn: String på mer enn 2 karakterer og mindre enn 32 karakterer.
+        etternavn: String på mer enn 2 karakterer og mindre enn 32 karakterer. dette er bare en test på hvor mange karagterer en linje på 79
+        adresse: String på mer enn 2 karakterer og mindre nn 32 karakterer.
+        postnr: int på 4 tall.
+    Returns:
+        Tuple( int, str, str, str, int)
+    """
+    if ( 
+        isinstance(kundenummer, int) and len(kundenummer) > 0 and len(kundenummer) < 10 and   # Sjekker om kundenr er et int og er mellom 0->10 karakterer
+        isinstance(fornavn, str) and 2 < len(fornavn) <= 32 and                     # Sjekker om fornavn er rn streng og at den er mellom 3 og 32 karakterer
+        isinstance(etternavn, str) and 2 < len(etternavn) <= 32 and                 # Sjekker om etternavn er en streng og at den er mellom 3 og 32 karakterer
+        isinstance(adresse, str) and 2 < len(adresse) <= 32 and                     # Sjekker om adresse er en streng og at den er mellom 3 og 32 karakterer
+        isinstance(postnr, int) and len(adresse) == 4 and adresse.isdigit()         # Sjekker om postnr er tall og den er 4 karakterer langt
+    ):
+        return (kundenummer, fornavn, etternavn, adresse, postnr)
+    else:
+        raise ValueError("Kundedata besto ikke validering")
+def kunde_valider_helper(streng: Union[str, int], fra: int, til: int, tall: bool= False)->bool:
+    """
+    Også en funksjon for validering Testing. Dynamisk sjekk om 
+    Args:
+        streng: Streng for testing
+        fra: Minimum lengde
+        til: Maksimum lengde
+        tall: True hvis int, standard str
+    Returns:
+        Bool
+    """
+    if tall:  
+        if not isinstance(streng, int):
+            return False # Må være int
+        return fra < streng < til
+    else:
+        if not isinstance(streng, str):
+            return False 
+        return fra < len(streng) < til 
+tilgjengelige_postnumre: list[str]= hent_postnr() # Henter postnr fra databasen denne trengs bare hentes 1 gang.
+# def valider_postnr(postnr: str) -> bool:
+#     """
+#     Validerer postnr
+#     Args:
+#         postnr: Postnr som skal valideres
+#     Returns:
+#         Bool
+#     """
+#     print(postnr)
+#     # Virker som den sjekker en string som er kort, og den kun får match på 4 tall, noe som gjør ting litt vanskelig... Natta!
+#     if len(postnr)>=3 and postnr.isdigit(): # Vil ha tall under fire karakterer
+#         return True
+#     elif len(postnr) == 4 and postnr.isdigit() and postnr in tilgjengelige_postnr: # Sjekker om postnr er 4 tall, og finnes i register
+#         return True
+#     else:
+#         return False    
+
+def kunde_oppdater(
+        kundenummer: int,
+        fornavn: str,
+        etternavn: str,
+        adresse: str,
+        postnr: int
+)-> bool:
+    """ 
+    Funksjon for å oppdatere en kunde i databasen. 
+    Args: se kunde_validering()
+        kundenummer: int mer enn 0 og maks 10 desimaler
+        fornavn: String på mer enn 2 karakterer og mindre enn 32 karakterer.
+        etternavn: String på mer enn 2 karakterer og mindre enn 32 karakterer. dette er bare en test på hvor mange karagterer en linje på 79
+        adresse: String på mer enn 2 karakterer og mindre nn 32 karakterer.
+        postnr: int på 4 tall.
+    Returns:
+        True, hvis vellykket
+    Raises:
+        ValueError: Hvis feil inndata.
+        ConnectionError: Hvis feil med tilkobling.
+    """
+    if(
+        kunde_valider_helper(kundenummer, 2, 999999999, True) and
+        kunde_valider_helper(fornavn, 2, 32) and
+        kunde_valider_helper(etternavn, 2, 32) and
+        kunde_valider_helper(adresse, 2, 32) and
+        kunde_valider_helper(postnr, 0000, 9999, True)
+    ):
+        kunde_data = (kundenummer, fornavn, etternavn, adresse, postnr)
+        try:
+            databasen = tilkobling_database() # koble til databasen
+            spørring = databasen.cursor() 
+            spørring.callproc('kunde_oppdater', kunde_data ) 
+            databasen.commit()
+            return True
+        except:
+            raise ConnectionError("Tilbkobling til database mislykket")
+        finally:
+            databasen.close()
+    else:
+        raise ValueError("Angitt data er ugyldig")
+
+def kunde_opprett( 
+        fornavn: str, 
+        etternavn: str, 
+        adresse: str,   
+        postnr: int    
+)->bool:
+    """
+    Funksjon for å oppdatere en kunde i databasen. 
+    Args: se kunde_validering()
+        fornavn: String på mer enn 2 karakterer og mindre enn 32 karakterer.
+        etternavn: String på mer enn 2 karakterer og mindre enn 32 karakterer. dette er bare en test på hvor mange karagterer en linje på 79
+        adresse: String på mer enn 2 karakterer og mindre nn 32 karakterer.
+        postnr: int på 4 tall.
+    Returns:
+        True, hvis vellykket
+    Raises:
+        ValueError: Hvis feil inndata.
+        ConnectionError: Hvis feil med tilkobling.
+    """
+    if(
+        kunde_valider_helper(fornavn, 2, 32) and
+        kunde_valider_helper(etternavn, 2, 32) and
+        kunde_valider_helper(adresse, 2, 32) and
+        kunde_valider_helper(postnr, 3, 5)
+    ):
+        kunde_data = (fornavn, etternavn, adresse, postnr)
+        try:
+            databasen = tilkobling_database()                                   
+            spørring = databasen.cursor() 
+            spørring.callproc('kunde_opprett', kunde_data)                      # Sender kunde_data til kunde_opprett SP
+            databasen.commit()
+            return True
+        except:
+            raise ConnectionError("Tilkobling til database mislykket")
+        finally:
+            databasen.close()
+    else:
+        raise ValueError("Angitt data er ugyldig")
 
 # Referanse: https://www.w3schools.com/python/python_mysql_select.asp
 # print(mydb)
