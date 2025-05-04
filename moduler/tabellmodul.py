@@ -19,7 +19,6 @@ class TabellModul:
         # Ramme for å vise tabelllisten:
         tabell_visning_ramme = customtkinter.CTkFrame(
             master=self.master, 
-            #TODO: fg_color="white", korrigert i linje 11 i theme.json
             corner_radius=0
             ) # Lager en ramme for tabellvisning
         # tabell_visning_ramme.grid(row=0, column=0, sticky="nsew", padx=10, pady=10) # Plassering av ramme
@@ -27,23 +26,24 @@ class TabellModul:
         # Ramme for å vise detaljer:
         detalj_visning_ramme = customtkinter.CTkFrame(
             master=self.master, 
-            #TODO: fg_color="white", Korrigert i linje 11 i theme.json
             corner_radius=0
             ) # Lager en ramme for detaljvisning
         # detalj_visning_ramme.grid(row=0, column=0, sticky="nsew", padx=10, pady=10) # Plassering av ramme
-        detalj_visning_ramme.grid(row=0, column=0, sticky="nsew") # Plassering av ramme
-        self.tabell_visning_ramme = tabell_visning_ramme # Setter tabell_visning_ramme til å være lik tabell_visning_ramme
-        self.detalj_visning_ramme = detalj_visning_ramme # Setter detalj_visning_ramme til å være lik detalj_visning_ramme
-        detalj_visning_ramme.lower(tabell_visning_ramme) # Lagrer detaljvisningrammen i bakgrunnen
+        detalj_visning_ramme.grid(row=0, column=0, sticky="nsew")   # Plassering av ramme
+        self.tabell_visning_ramme = tabell_visning_ramme            # Setter tabell_visning_ramme til å være lik tabell_visning_ramme
+        self.detalj_visning_ramme = detalj_visning_ramme            # Setter detalj_visning_ramme til å være lik detalj_visning_ramme
+        detalj_visning_ramme.lower(tabell_visning_ramme)            # Lagrer detaljvisningrammen i bakgrunnen
         # Øvre meny, Oppsett:
         # Lager en ramme for øvre meny:
         self.meny_ramme = customtkinter.CTkFrame(
             master=tabell_visning_ramme, 
             ) 
         self.meny_ramme.grid(row=0, column=0, sticky="new", padx=10, pady=10) # Plassering av ramme
-        self.meny_ramme.grid_columnconfigure(0, weight=0) # Sentrerer innhold
-        self.meny_ramme.grid_columnconfigure(1, weight=0) # Sentrerer innhold
-        self.meny_ramme.grid_columnconfigure(2, weight=1) # Sentrerer innhold
+        self.meny_ramme.grid_columnconfigure(0, weight=0) #søkefeltet
+        self.meny_ramme.grid_columnconfigure(1, weight=0) #søkeknappen
+        self.meny_ramme.grid_columnconfigure(2, weight=1) #generelt plassopptak weigh=1
+        self.meny_ramme.grid_columnconfigure(3, weight=0) #opprett ny kunde
+
 
         # Øvre meny, Søkefelt:
         leteord = customtkinter.CTkEntry(
@@ -63,11 +63,10 @@ class TabellModul:
             command=lambda: self.søk_i_data(leteord.get()), 
         )
         knapp_søk.grid(row=0, column=1, sticky="nw", padx=10, pady=10)                          # Plassering av søkeknapp
-
+        
         # Tabell ramme, Oppsett:
         tabell_ramme = customtkinter.CTkFrame(
             master=tabell_visning_ramme, 
-            #TODO: fg_color="lightgrey", korrigert farge L11 i theme.json
             corner_radius=5
             )
         tabell_ramme.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
@@ -125,7 +124,7 @@ class TabellModul:
             command=lambda: self.endre_side(-1),
             width=30,
         )
-        # TODO: Få denne til å oppdateres ved endring av antall viste rader
+        # Sideindikator:
         self.side_indikator = customtkinter.CTkLabel(
             master=navigasjon_ramme,
             text=f"{self.aktuell_side}/{self.antall_sider}",
@@ -173,14 +172,27 @@ class TabellModul:
     
     # Her oppdaterer vi tabellen i egen funksjon:
     def oppdater_tabell(self):
+
+        self.antall_sider = max(1, (len(self.vist_data) + int(self.knapp_antall_var.get()) - 1) // int(self.knapp_antall_var.get()))    #beregner antall sider basert på antall rader i varelageret og antall viste rader  
+        # Oppdaterer tabellen med dataene:  
+
+        if      self.aktuell_side > self.antall_sider:  #hvis aktuell side er større enn antall sider, så setter vi den til antall sider
+                self.aktuell_side = self.antall_sider
+        elif    self.aktuell_side < 1:                  #hvis aktuell side er mindre enn 1, så setter vi den til 1
+                self.aktuell_side = 1   
+
+        # Sletter eksisterende rader i tabellen:
         for rad in self.tree.get_children():
             self.tree.delete(rad)
-        fra = int(self.aktuell_side) * int(self.knapp_antall_var.get()) - int(self.knapp_antall_var.get())
-        til = int(self.aktuell_side) * int(self.knapp_antall_var.get())
-        for rad in self.vist_data[fra:til]: #går gjennom dataene tilgjengelig, begrenset til sidevisning
-            self.tree.insert("", "end", values=rad) #legger de inn i tree
-        self.antall_sider = len(self.vist_data) // int(self.knapp_antall_var.get()) + 1 # Beregner antall sider på nytt
-        self.side_indikator.configure(text=f"{self.aktuell_side}/{self.antall_sider}") # Oppdaterer sideindikatoren
+
+        #legger til nye rader i tabellen:
+        #beregner hvilke rader som skal vises basert på aktuell side og antall viste rader:
+        fra = int(self.aktuell_side) * int(self.knapp_antall_var.get()) - int(self.knapp_antall_var.get())  #beregner fra hvilken rad vi skal begynne å vise dataene
+        til =  fra + int(self.knapp_antall_var.get())   #beregner til hvilken rad vi skal slutte å vise dataene
+        for rad in self.vist_data[fra:til]:             #går gjennom dataene tilgjengelig, begrenset til sidevisning
+            self.tree.insert("", "end", values=rad)     #legger de inn i tree
+        self.antall_sider = len(self.vist_data) // int(self.knapp_antall_var.get()) + 1     # Beregner antall sider på nytt
+        self.side_indikator.configure(text=f"{self.aktuell_side}/{self.antall_sider}")      # Oppdaterer sideindikatoren
 
     # Funksjon for å endre side la oss se.... 
     def endre_side(self, retning):

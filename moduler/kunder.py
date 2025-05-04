@@ -24,7 +24,7 @@ class KunderModul(TabellModul):
             ] # TODO: Sjekk ut og hent riktig data.
         self.vis()
     def ekstra_funksjoner(self):
-        self.meny_ramme.grid_columnconfigure(0, weight=1) # Sentrerer innhold
+        #CHECKOUT: dekativert for test.. self.meny_ramme.grid_columnconfigure(0, weight=1)
 
         self.knapp_opprett_kunde = customtkinter.CTkButton(
             master=self.meny_ramme, # Plassering av knapp for å opprette ny kunde
@@ -32,7 +32,8 @@ class KunderModul(TabellModul):
             command=self.opprett_kunde,
             width=30,
         )
-        self.knapp_opprett_kunde.grid(row=0, column=2, sticky="ne", padx=10, pady=10) # Plassering av knapp for å opprette ny kunde
+        #CHECKOUT: sjekk column 2 er endret til 3 
+        self.knapp_opprett_kunde.grid(row=0, column=3, sticky="ne", padx=10, pady=10) # Plassering av knapp for å opprette ny kunde
 
     def hent_data(self):
         return hent_kunder()  # Henter kunder fra databasen
