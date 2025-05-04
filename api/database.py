@@ -127,20 +127,6 @@ def hent_spesifikk_kunde(kunde_id):
         print("Ingen kunder valgt.")
         return []
     
-# Funksjon for å legge til ny kunde: # TODO: Opprett sikkerhetssjekker for dataen
-def legg_til_kunde(fornavn, etternavn, adresse, postnr):
-    # TODO: Burdre sikkert sikre riktig data og sjekke at det ikke er duplikater i databasen.
-    try:
-        databasen = tilkobling_database() # Koble til databasen
-        spørring = databasen.cursor() # Dette er en virituell "markør"
-        spørring.callproc('LeggTilKunde', (fornavn, etternavn, adresse, postnr))
-        databasen.commit() # Lagre endringer i databasen
-    except mysql.connector.Error as err:
-        print(f"Feil ved kall til stored procedure: {err}")
-    finally:
-        if databasen:
-            databasen.close()
-
 def hent_postnr():
     """
     Funksjon for å hente postnr fra databasen
@@ -157,37 +143,9 @@ def hent_postnr():
         print(f"Feil ved henting av postnr: {err}")
         return []
 
-def kunde_validering(
-        kundenummer: int,
-        fornavn: str,
-        etternavn: str,
-        adresse: str,
-        postnr: int
-)->tuple[int, str, str, str, int]:                                              # typebeskrivelse på return
-    """
-    Funksjon for å validere kundedata
-    Args:
-        kundenummer: int mer enn 0 og maks 10 desimaler
-        fornavn: String på mer enn 2 karakterer og mindre enn 32 karakterer.
-        etternavn: String på mer enn 2 karakterer og mindre enn 32 karakterer. dette er bare en test på hvor mange karagterer en linje på 79
-        adresse: String på mer enn 2 karakterer og mindre nn 32 karakterer.
-        postnr: int på 4 tall.
-    Returns:
-        Tuple( int, str, str, str, int)
-    """
-    if ( 
-        isinstance(kundenummer, int) and len(kundenummer) > 0 and len(kundenummer) < 10 and   # Sjekker om kundenr er et int og er mellom 0->10 karakterer
-        isinstance(fornavn, str) and 2 < len(fornavn) <= 32 and                     # Sjekker om fornavn er rn streng og at den er mellom 3 og 32 karakterer
-        isinstance(etternavn, str) and 2 < len(etternavn) <= 32 and                 # Sjekker om etternavn er en streng og at den er mellom 3 og 32 karakterer
-        isinstance(adresse, str) and 2 < len(adresse) <= 32 and                     # Sjekker om adresse er en streng og at den er mellom 3 og 32 karakterer
-        isinstance(postnr, int) and len(adresse) == 4 and adresse.isdigit()         # Sjekker om postnr er tall og den er 4 karakterer langt
-    ):
-        return (kundenummer, fornavn, etternavn, adresse, postnr)
-    else:
-        raise ValueError("Kundedata besto ikke validering")
 def kunde_valider_helper(streng: Union[str, int], fra: int, til: int, tall: bool= False)->bool:
     """
-    Også en funksjon for validering Testing. Dynamisk sjekk om 
+    Også en funksjon for validering Testing. Dynamisk sjekk om streng stemmer med kravene.
     Args:
         streng: Streng for testing
         fra: Minimum lengde
@@ -205,22 +163,7 @@ def kunde_valider_helper(streng: Union[str, int], fra: int, til: int, tall: bool
             return False 
         return fra < len(streng) < til 
 tilgjengelige_postnumre: list[str]= hent_postnr() # Henter postnr fra databasen denne trengs bare hentes 1 gang.
-# def valider_postnr(postnr: str) -> bool:
-#     """
-#     Validerer postnr
-#     Args:
-#         postnr: Postnr som skal valideres
-#     Returns:
-#         Bool
-#     """
-#     print(postnr)
-#     # Virker som den sjekker en string som er kort, og den kun får match på 4 tall, noe som gjør ting litt vanskelig... Natta!
-#     if len(postnr)>=3 and postnr.isdigit(): # Vil ha tall under fire karakterer
-#         return True
-#     elif len(postnr) == 4 and postnr.isdigit() and postnr in tilgjengelige_postnr: # Sjekker om postnr er 4 tall, og finnes i register
-#         return True
-#     else:
-#         return False    
+
 
 def kunde_oppdater(
         kundenummer: int,
@@ -231,10 +174,10 @@ def kunde_oppdater(
 )-> bool:
     """ 
     Funksjon for å oppdatere en kunde i databasen. 
-    Args: se kunde_validering()
+    Args: 
         kundenummer: int mer enn 0 og maks 10 desimaler
         fornavn: String på mer enn 2 karakterer og mindre enn 32 karakterer.
-        etternavn: String på mer enn 2 karakterer og mindre enn 32 karakterer. dette er bare en test på hvor mange karagterer en linje på 79
+        etternavn: String på mer enn 2 karakterer og mindre enn 32 karakterer. 
         adresse: String på mer enn 2 karakterer og mindre nn 32 karakterer.
         postnr: int på 4 tall.
     Returns:
@@ -271,10 +214,10 @@ def kunde_opprett(
         postnr: int    
 )->bool:
     """
-    Funksjon for å oppdatere en kunde i databasen. 
-    Args: se kunde_validering()
+    Funksjon for å legge til en kunde i databasen. 
+    Args:
         fornavn: String på mer enn 2 karakterer og mindre enn 32 karakterer.
-        etternavn: String på mer enn 2 karakterer og mindre enn 32 karakterer. dette er bare en test på hvor mange karagterer en linje på 79
+        etternavn: String på mer enn 2 karakterer og mindre enn 32 karakterer. 
         adresse: String på mer enn 2 karakterer og mindre nn 32 karakterer.
         postnr: int på 4 tall.
     Returns:

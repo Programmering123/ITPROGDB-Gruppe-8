@@ -62,29 +62,31 @@ Også fint å prøve å typebeskrive funksjoner og variabler. F.eks. tekst_knapp
 Standard Font i programmet er "Roboto".
 
 # Database SP(Store Procedure)
-## Enten kjør som spørring :
-DELIMITER //
-CREATE PROCEDURE LeggTilKunde(
-    IN p_fornavn VARCHAR(255),
-    IN p_etternavn VARCHAR(255),
-    IN p_adresse VARCHAR(255),
-    IN p_postnr VARCHAR(10)
+## Oppdater:
+CREATE PROCEDURE `kunde_oppdater`(
+	IN kundenummer VARCHAR(10),
+    IN fornavn VARCHAR(255),
+    IN etternavn VARCHAR(255),
+    IN adresse VARCHAR(255),
+    IN postnr VARCHAR(10)
+)
+BEGIN
+	UPDATE `varehusdb`.`kunde` 
+    SET `Adresse` = adresse,
+    `Fornavn` = fornavn,
+	`Etternavn` = etternavn,
+    `Postnr` = postnr
+    WHERE (`KNr` = kundenummer);
+END
+## Opprett:
+CREATE PROCEDURE `kunde_opprett`(
+    IN fornavn VARCHAR(255),
+    IN etternavn VARCHAR(255),
+    IN adresse VARCHAR(255),
+    IN postnr VARCHAR(10)
 )
 BEGIN
     SELECT MAX(KNr) INTO @siste_knr FROM kunde;
     SET @ny_knr = IFNULL(@siste_knr, 0) + 1;
-    INSERT INTO kunde (KNr, Fornavn, Etternavn, Adresse, PostNr) VALUES (@ny_knr, p_fornavn, p_etternavn, p_adresse, p_postnr);
-END //
-DELIMITER ;
-## Eller legg inn i SP i MySQL Workbench:
-CREATE DEFINER=`root`@`localhost` PROCEDURE `LeggTilKunde`(
-    IN p_fornavn VARCHAR(255),
-    IN p_etternavn VARCHAR(255),
-    IN p_adresse VARCHAR(255),
-    IN p_postnr VARCHAR(10)
-)
-BEGIN
-    SELECT MAX(KNr) INTO @siste_knr FROM kunde;
-    SET @ny_knr = IFNULL(@siste_knr, 0) + 1;
-    INSERT INTO kunde (KNr, Fornavn, Etternavn, Adresse, PostNr) VALUES (@ny_knr, p_fornavn, p_etternavn, p_adresse, p_postnr);
+    INSERT INTO kunde (KNr, Fornavn, Etternavn, Adresse, PostNr) VALUES (@ny_knr, fornavn, etternavn, adresse, postnr);
 END
