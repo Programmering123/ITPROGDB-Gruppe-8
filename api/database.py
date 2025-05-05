@@ -162,7 +162,9 @@ def kunde_valider_helper(streng: Union[str, int], fra: int, til: int, tall: bool
         if not isinstance(streng, str):
             return False 
         return fra < len(streng) < til 
-tilgjengelige_postnumre: list[str]= hent_postnr() # Henter postnr fra databasen denne trengs bare hentes 1 gang.
+    
+
+tilgjengelige_postnumre: list[str]= hent_postnr()                               # Henter postnr fra databasen denne trengs bare hentes 1 gang.
 
 
 def kunde_oppdater(
