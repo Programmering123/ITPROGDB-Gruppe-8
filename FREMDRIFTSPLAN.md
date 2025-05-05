@@ -23,7 +23,13 @@ KG - Konstantina Goteva
 
 04.05.2025  - Sikkerhetsteste alt - Har vi nok sikkerhet?
 
-11.05.2025  - Pynte
+11.05.2025  - 
+            Fikse ferdig input til kunder - JEL
+            Lage PDF til faktura. - TT
+            Stored Procedures - KG 
+            Lage mva/total resultat i ordredetaljer - JAH
+            Lage API, webinterface - JEL
+            Mangler noe å gjøre? SE TODO liste i VSCode.
 
 18.05.2025  - PDF faktura. 
 

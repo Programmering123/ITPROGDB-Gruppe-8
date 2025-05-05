@@ -53,8 +53,15 @@ Set-ExecutionPolicy Unrestricted -Scope Process
 
 # Innstallerer moduler:
 pip install -r .\requirements.txt
-
 Kan testes ved å kjøre pip list, for å se om det er riktige pakker innstallert
+
+# Konfigurering Mysql database:
+Opprett en fil i root som heter secrets.env
+Denne skal inneholde:
+DB_HOST = "localhost"
+DB_USER = "brukernavn"
+DB_PASSWORD = "passord"
+DB_PORT = "3306"
 
 # Definering av variabler og typebeskrivelse:
 variabler prøver vi å definere som <hva>_<navn>. F.eks. en knapp til kunder : knapp_kunder = customtkinter.CTkButton()...
