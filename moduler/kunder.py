@@ -9,6 +9,7 @@ from tkinter import ttk
 import customtkinter
 
 from api.database import hent_kunder, kunde_oppdater, kunde_opprett # Importer funksjoner for å hente kunder og legge til kunder fra databasen
+from api.database import tilgjengelige_postnumre # Importer tilgjengelige postnumre fra databasen
 from moduler.tabellmodul import TabellModul # Importer TabellModul fra tabellmodul.py
 from moduler.hjelpere import validering_postnr_sanntid                          # Importer valideringsfunksjon for postnummer fra hjelpfunksjoner.py
 
@@ -20,6 +21,10 @@ Ved dobbeltklikk på dataliste så skal den åpne funksjonen vis_detaljer
 Hvor den skal gi mulighet til å behandle datalinje.
 """
 class KunderModul(TabellModul):
+    """
+    KunderModul er en klasse som arver fra TabellModul.
+    Den viser informasjon om alle kunder i databasen og gir mulighet for å opprette og redigere kunder.
+    """
     def __init__(self, master):
         super().__init__(master)
         # Spørring: KNr, Fornavn, Etternavn, Addresse, PostNr
@@ -32,15 +37,12 @@ class KunderModul(TabellModul):
             ] # TODO: Sjekk ut og hent riktig data.
         self.vis()
     def ekstra_funksjoner(self):
-        #CHECKOUT: dekativert for test.. self.meny_ramme.grid_columnconfigure(0, weight=1)
-
         self.knapp_opprett_kunde = customtkinter.CTkButton(
             master=self.meny_ramme, # Plassering av knapp for å opprette ny kunde
             text="Opprett ny kunde",
             command=self.vis_detaljer,
             width=30,
         )
-        #CHECKOUT: sjekk column 2 er endret til 3 
         self.knapp_opprett_kunde.grid(row=0, column=3, sticky="ne", padx=10, pady=10) # Plassering av knapp for å opprette ny kunde
 
     def hent_data(self):
@@ -57,19 +59,16 @@ class KunderModul(TabellModul):
     """
     def vis_detaljer_grafisk(self, kundedata: list=[]):
         pass                                                                    # Placeholder for å lage grafisk visning av kunde data.
-    
+
     def vis_detaljer(self, kundedata: list=[]):
         """ 
-        Denne funksjonen bruker i kunder.py til å vise redigeringsvindu
-        Den kan valgfritt ta imot kundedata for redigering, eller oppretter kunde uten kundedata 
-        Nå finner den rader som er valgt og henter dataen der selv, men tenker det
-        er optimalt om vi får mottatt dataen som et argument
+        Denne funksjonen brukes i kunder.py til å vise redigeringsvindu
+        Den kan valgfritt ta imot kundedata for redigering, eller oppretter kunde uten kundedata
+        Den benytter seg av master og bruker detaljvisningrammen som er opprettet i TabellModul. 
         """
         # her kan vi sjekke om len på kundedata != 0 , så kan vi evt hente ut data....
         if len(kundedata) != 0:
             kundenummer, fornavn, etternavn, adresse, postnr = kundedata        # Legger dataen til passende variabler
-            print(f" Valgt data: {kundenummer}, {fornavn}, {etternavn}, {adresse}, {postnr}")# TODO: Fjernes
-            print(f"Fått data: {kundedata}") # TODO: Fjernes
         
         ## Ha en funksjon her som drar inn GUI innholdet.
         if self.detalj_visning_ramme:                                           # Sjekker om detaljvisningrammen er opprettet. # TODO: Har ingen else... trenger vi den?
@@ -103,56 +102,36 @@ class KunderModul(TabellModul):
         etikett_tittel.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
 
         # Inputfelt for kunderedigering:
-        etikett_input_fornavn = customtkinter.CTkLabel(
+        input_fornavn = self.lag_inputfelt(ramme_hoved, "Fornavn:", 0)          # Lager inputfelt for fornavn
+        input_etternavn = self.lag_inputfelt(ramme_hoved, "Etternavn", 1)       # Lager inputfelt for etternavn
+        input_adresse = self.lag_inputfelt(ramme_hoved, "Adresse", 2)           # Lager inputfelt for adresse  
+        input_postnr = self.lag_inputfelt(ramme_hoved, "Postnummer:", 3)        # Lager inputfelt for postnummer
+        feilmelding = customtkinter.CTkLabel(
             master=ramme_hoved,
-            text="Fornavn:",
+            text="Feil tall tastet inn, kun gyldig postnummer er tillatt.",
             font=("Roboto", 14),
-            anchor="e",
+            anchor="w",
+            text_color="red",
         )
-        input_fornavn = customtkinter.CTkEntry(
-            master=ramme_hoved,
-            placeholder_text="Fornavn",
-            width=200,
-        )
-        etikett_input_etternavn = customtkinter.CTkLabel(
-            master=ramme_hoved,
-            text="Etternavn:",
-            font=("Roboto", 14),
-            anchor="e",
-        )
-        input_etternavn = customtkinter.CTkEntry(
-            master=ramme_hoved,
-            placeholder_text="Etternavn",
-            width=200,
-        )
-        etikett_input_adresse = customtkinter.CTkLabel(
-            master=ramme_hoved,
-            text="Adresse:",
-            font=("Roboto", 14),
-            anchor="e",
-        )
-        input_adresse = customtkinter.CTkEntry(
-            master=ramme_hoved,
-            placeholder_text="Adresse",
-            width=200,
-        )
-        etikett_input_postnr = customtkinter.CTkLabel(
-            master=ramme_hoved,
-            text="Postnummer:",
-            font=("Roboto", 14),
-            anchor="e",
-        )
-        # Valideringsfunksjon for postnummer: TODO: Denne trenger kanskje ikke være her... strukturmessig.
+        feilmelding.grid(row=5, column=0, sticky="nsew", padx=10, pady=10)
+        # feilmelding.grid_forget()
+
         try:
-            valider_postnr_kommando = self.master.register(validering_postnr_sanntid) # Registrerer valideringsfunksjonen for postnummeret.
+            valider_postnr_kommando = self.master.register(
+                lambda postnr: validering_postnr_sanntid(                       # Oppretter lambda for å kunne sende flere argumenter
+                    postnr, feilmelding                                        
+                ) 
+            )                                                                   # Registrerer valideringsfunksjonen for postnummeret.
         except:
             print("Feil ved registrering av valideringsfunksjon for postnummeret.")
-        input_postnr = customtkinter.CTkEntry(
-            master=ramme_hoved,
+        input_postnr[1].configure(
             validate="key",
-            validatecommand=(valider_postnr_kommando, "%P"),                    # Validerer postnummeret med valideringsfunksjonen.
-            width=200,
-        )
+            validatecommand=(
+                valider_postnr_kommando,
+                "%P"
+            )
+        ) # Validerer postnummeret med valideringsfunksjonen.   
+
         # Forskjellig tekst og kommando for å opprette eller redigere kunde:
         if len(kundedata) != 0:                                                 # Sjekker om det er mottatt kundedata eller ny kunde
             lagre_text = "Lagre endringer"                                      
@@ -177,24 +156,51 @@ class KunderModul(TabellModul):
             command=lagre_kommando
         )
   
-        # Plassering av etiketter og inputfelt i ramme_hoved :
-        etikett_input_fornavn.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
-        input_fornavn.grid(row=0, column=1, sticky="nsew", padx=10, pady=10)
-        etikett_input_etternavn.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
-        input_etternavn.grid(row=1, column=1, sticky="nsew", padx=10, pady=10)
-        etikett_input_adresse.grid(row=2, column=0, sticky="nsew", padx=10, pady=10)
-        input_adresse.grid(row=2, column=1, sticky="nsew", padx=10, pady=10)
-        etikett_input_postnr.grid(row=3, column=0, sticky="nsew", padx=10, pady=10)
-        input_postnr.grid(row=3, column=1, sticky="nsew", padx=10, pady=10)
         knapp_lagre.grid(row=4, column=0, columnspan=2, sticky="nsew", padx=10, pady=10)
         
-        # innsetting av verdier, i forbindelse med redigering
+        # innsetting av verdier, i forbindelse med redigering av kunde:
         if len(kundedata)!=0:                                                   # Dette skal kun gjøres hvis det er sendt kundedata.
-            input_fornavn.insert(0, fornavn)
-            input_etternavn.insert(0, etternavn)
-            input_adresse.insert(0, adresse)
-            input_postnr.insert(0, postnr)
+            input_fornavn[1].insert(0, fornavn)
+            input_etternavn[1].insert(0, etternavn)
+            input_adresse[1].insert(0, adresse)
+            input_postnr[1].insert(0, postnr)
 
+    def lag_nedtrekksmeny(
+            self, 
+            ramme: customtkinter.CTkFrame, 
+            etikett: str, 
+            rad: int, 
+            valg: list[str]
+        ) -> tuple[customtkinter.CTkLabel, ttk.Combobox]:
+        """Lager nedtrekksmeny for å opprette ny kunde."""
+        etikett = customtkinter.CTkLabel(
+            master=ramme,
+            text=etikett,
+            font=("Roboto", 14),
+            anchor="e",
+        )
+        etikett.grid(row=rad, column=0, sticky="nsew", padx=10, pady=10)
+        nedtrekksmeny = customtkinter.CTkOptionMenu(
+            master=ramme,
+            values=valg,
+            width=200,
+        )
+        nedtrekksmeny.grid(row=rad, column=1, sticky="nsew", padx=10, pady=10)
+        return etikett, nedtrekksmeny
+    def lag_inputfelt(self, ramme: customtkinter.CTkFrame, etikett: str, rad: int) -> tuple[customtkinter.CTkLabel, customtkinter.CTkEntry]:
+        """Lager inputfelt for å opprette ny kunde."""
+        etikett = customtkinter.CTkLabel(
+            master=ramme,
+            text=etikett,
+            font=("Roboto", 14),
+            anchor="e",
+        )
+        etikett.grid(row=rad, column=0, sticky="nsew", padx=10, pady=10)
+        inputfelt = customtkinter.CTkEntry(
+            master=ramme,
+            width=200,
+        )
+        return etikett, inputfelt
 
 
     def kunde_db_opprett(self, fornavn: str, etternavn: str, adresse: str, postnr: int) -> None:

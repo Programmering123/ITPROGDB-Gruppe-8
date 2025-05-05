@@ -35,7 +35,7 @@ class TabellModul:
         # Lager en ramme for øvre meny:
         self.meny_ramme = customtkinter.CTkFrame(
             master=tabell_visning_ramme, 
-            ) 
+        ) 
         self.meny_ramme.grid(row=0, column=0, sticky="new", padx=10, pady=10)   # Plassering av ramme
         self.meny_ramme.grid_columnconfigure(0, weight=0)                       # Søkefeltet
         self.meny_ramme.grid_columnconfigure(1, weight=0)                       # Søkeknappen
@@ -61,6 +61,15 @@ class TabellModul:
             command=lambda: self.let_i_data(leteord.get()), 
         )
         knapp_søk.grid(row=0, column=1, sticky="nw", padx=10, pady=10)          # Plassering av søkeknapp
+        # Øvre meny, Opprett ny kunde: TEST
+        knapp_ny = customtkinter.CTkButton(
+            master=self.meny_ramme, # Plassering av knapp for å opprette ny kunde
+            text="Opprett ny kunde",
+            command=self.vis_detaljer,
+            width=30,
+        )
+        knapp_ny.grid(row=0, column=3, sticky="ne", padx=10, pady=10)           # Plassering av knapp for å opprette ny kunde
+
         
         # Tabell ramme, Oppsett:
         tabell_ramme = customtkinter.CTkFrame(
@@ -69,7 +78,7 @@ class TabellModul:
             )
         tabell_ramme.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
 
-        # # Setter opp grid for tabellen og får den til å ta opp hele høyden og bredden:
+        # Setter opp grid for tabellen og får den til å ta opp hele høyden og bredden:
         tabell_visning_ramme.grid_rowconfigure(0, weight=0)                     # Låser ramme_meny
         tabell_visning_ramme.grid_rowconfigure(1, weight=1)                     # Fleksibel høyde for tabellen
         tabell_visning_ramme.grid_columnconfigure(0, weight=1)                  # Fleksibel bredde for tabellen
@@ -142,7 +151,7 @@ class TabellModul:
             command=lambda: self.endre_side(1),
             width=30,
         )
-        self.oppdater_tabell() # Kaller oppdater_tabell for å vise første side av dataene i tabellen
+        self.oppdater_tabell()                                                  # Kaller oppdater_tabell for å vise første side av dataene i tabellen
         # Plassering av komponenter:
         navigasjon_ramme.grid(row=2, column=0, sticky="sew", padx=10, pady=10)
         knapp_antall_tekst.grid(row=0, column=0, sticky="nw", padx=10, pady=10)
@@ -151,7 +160,7 @@ class TabellModul:
         self.side_indikator.grid(row=0, column=3, sticky="ew", padx=10, pady=10)
         knapp_nav_frem.grid(row=0, column=4, sticky="w", padx=10, pady=10)
 
-        self.ekstra_funksjoner() # Kaller ekstra funksjoner for spesifikasjoner i SubClass
+        self.ekstra_funksjoner()                                                # Kaller ekstra funksjoner for spesifikasjoner i SubClass
 
     def ekstra_funksjoner(self):
         """Ekstra funksjoner for SubClass. Denne funksjonen må implementeres i SubClass."""

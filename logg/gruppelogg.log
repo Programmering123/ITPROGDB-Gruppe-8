@@ -31,4 +31,9 @@ Avsluttet med å oppdatere fremdriftsplanen på GitHub.
 
 01.05.2025 20:00-
 Kommenterer litt kode, planlegger en refaktorering... og ser på løsning av behandling av kunde
-04.05.2025 20:00-21:00
+04.05.2025 19:00-21:00
+Ryddet opp i koden ihht PEP 8. 
+Laget valideringsfunksjon for redigering av kunde - Spesifikt postnr vindu.
+Laget noen nye SP for kundeoppretting og redigering.
+Prøver å opprette ny branch. for å se hvordan det fungerer.
+
