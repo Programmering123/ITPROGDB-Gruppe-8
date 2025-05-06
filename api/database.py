@@ -143,7 +143,7 @@ def hent_postnr():
         print(f"Feil ved henting av postnr: {err}")
         return []
 
-def kunde_valider_helper(streng: Union[str, int], fra: int, til: int, tall: bool= False)->bool:
+def kunde_valider_helper(streng: Union[str, int], fra: int, til: int, tall: bool= False, postnr: bool=False)->bool:
     """
     Også en funksjon for validering Testing. Dynamisk sjekk om streng stemmer med kravene.
     Args:
@@ -151,19 +151,23 @@ def kunde_valider_helper(streng: Union[str, int], fra: int, til: int, tall: bool
         fra: Minimum lengde
         til: Maksimum lengde
         tall: True hvis int, standard str
+        postnr: True hvis postnr, standard False
     Returns:
         Bool
     """
     if tall:  
         if not isinstance(streng, int):
-            return False # Må være int
-        return fra < streng < til
+            return False                                                        
+        return fra < streng < til                                               # returnerer True hvis det er mellom angitt verdi
+    elif postnr:
+        if not streng.isdigit():                                                # Må være kun tall
+            return False
+        return len(streng)==4                                                   # returnerer True hvis det er 4 siffer
     else:
         if not isinstance(streng, str):
             return False 
         return fra < len(streng) < til 
     
-
 tilgjengelige_postnumre: list[str]= hent_postnr()                               # Henter postnr fra databasen denne trengs bare hentes 1 gang.
 
 
@@ -189,11 +193,11 @@ def kunde_oppdater(
         ConnectionError: Hvis feil med tilkobling.
     """
     if(
-        kunde_valider_helper(kundenummer, 2, 999999999, True) and
+        kunde_valider_helper(kundenummer, 2, 999999999, tall=True) and
         kunde_valider_helper(fornavn, 2, 32) and
         kunde_valider_helper(etternavn, 2, 32) and
         kunde_valider_helper(adresse, 2, 32) and
-        kunde_valider_helper(postnr, 0000, 9999, True)
+        kunde_valider_helper(postnr, 0000, 9999, postnr=True)
     ):
         kunde_data = (kundenummer, fornavn, etternavn, adresse, postnr)
         try:
@@ -203,7 +207,7 @@ def kunde_oppdater(
             databasen.commit()
             return True
         except:
-            raise ConnectionError("Tilbkobling til database mislykket")
+            raise ConnectionError("Tilkobling til database mislykket")
         finally:
             databasen.close()
     else:

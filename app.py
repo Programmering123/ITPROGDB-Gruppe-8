@@ -56,7 +56,7 @@ class App(customtkinter.CTk):
         self.bildeknapp.grid(row=0, column=0, sticky="n", padx=10, pady=10) 
         # Oppretter knappene i menyen: ( se https://customtkinter.tomschimansky.com/documentation/widgets/button for forklaring )
         self.knapp = customtkinter.CTkButton(master=self.meny, text="Ordrer", command=lambda: self.vis_modul(OrdrerModul))
-        self.knapp.grid(row=1, column=0, sticky="n", padx=10, pady=3) 
+        self.knapp.grid(row=1, column=0, sticky="n", padx=10, pady=3)
         self.knapp2 = customtkinter.CTkButton(master=self.meny, text="Varelager", command=lambda: self.vis_modul(VarelagerModul))
         self.knapp2.grid(row=2, column=0, sticky="n", padx=10, pady=3)
         self.knapp3 = customtkinter.CTkButton(master=self.meny, text="Kunder", command=lambda: self.vis_modul(KunderModul))
