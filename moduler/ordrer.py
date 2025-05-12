@@ -6,6 +6,7 @@ import customtkinter
 from tkinter import ttk
 from api.database import hent_ordrer, hent_spesifikk_ordre, hent_spesifikk_kunde, hent_ordrelinjer
 from moduler.tabellmodul import TabellModul # Importer TabellModul fra tabellmodul.py
+from moduler.fakt import lag_faktura, generer_unikt_fakturanummer # Importer lag_faktura fra fakt.py
 
 class OrdrerModul(TabellModul):
     def __init__(self, master):
@@ -200,6 +201,70 @@ class OrdrerModul(TabellModul):
                     text=f"Betalingsstatus: {'Betalt '+str(ordredata['BetaltDato']) if ordredata['BetaltDato'] != None else 'Ikke betalt'}",
                 )
                 etikett_betalt.grid(row=2,column=0,sticky="nw", padx=10, pady=10)        
+        knapp_genere_faktura = customtkinter.CTkButton(
+            master=ramme_header,
+            text="Generer faktura",
+            command=lambda: self.generer_faktura(ordre)
+        )
+        knapp_genere_faktura.grid(row=2,column=1,sticky="nw", padx=10, pady=10)
+
+    def generer_faktura(self, valgt_ordre):
+        valgt_ordre = self.tree.focus()
+        verdier = self.tree.item(valgt_ordre)["values"]
+        if not verdier:
+            print("Ingen ordre valgt.")
+            return
+
+        ordre_id = verdier[0]
+        kundeinfo = hent_spesifikk_kunde(verdier[4])  # Hent kundeinfo
+        ordrelinjer = hent_ordrelinjer(ordre_id)  # Hent ordrelinjer
+
+        # Forbered data for faktura
+        kunde = f"{kundeinfo[1]} {kundeinfo[2]}"
+        adresse = kundeinfo[3]
+        postnummer = kundeinfo[4]
+        poststed = kundeinfo[5]
+        dato = verdier[2]
+        belop = sum(
+            linje[2] * linje[3] 
+            for linje in ordrelinjer
+            )
+        mva = belop / 25
+        total = belop + mva
+        betalingsbetingelser = 14
+        fakturanummer = generer_unikt_fakturanummer(ordrenummer=str(ordre_id), dato=dato)
+        ordrenummer = ordre_id
+        kundenummer = kundeinfo[0]
+        var_referanse = "Varelageret AS"
+        deres_referanse = kunde
+        betalingsinformasjon = "1234.56.78910"
+        kommentar = " "
+        vedlegg = "Ingen"
+
+        # Generer faktura
+        lag_faktura(
+            kunde=kunde,
+            adresse=adresse,
+            postnummer=postnummer,
+            poststed=poststed,
+            dato=dato,
+            belop=belop,
+            mva=mva,
+            total=total,
+            betalingsbetingelser=betalingsbetingelser,
+            fakturanummer=fakturanummer,
+            ordrenummer=ordrenummer,
+            kundenummer=kundenummer,
+            var_referanse=var_referanse,
+            deres_referanse=deres_referanse,
+            betalingsinformasjon=betalingsinformasjon,
+            ordrelinjer=ordrelinjer,
+            kommentar=kommentar,
+            vedlegg=vedlegg,
+            unikt_nummer=fakturanummer,
+            filnavn=f"{fakturanummer}.pdf",
+            )
+        print(f"Faktura generert:{fakturanummer}.pdf")
 
 
     def lukk_detaljer(self):
