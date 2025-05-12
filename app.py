@@ -144,9 +144,3 @@ class App(customtkinter.CTk):
 if __name__ == "__main__":
     App()
 
-
-from db_service import hent_kunder_med_proc
-
-kunder = hent_kunder_med_proc()
-for k in kunder:
-    print(k["Fornavn"], k["Etternavn"])

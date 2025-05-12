@@ -76,11 +76,11 @@ class OrdrerModul(TabellModul):
             text=f"Ordredato: {ordredata['OrdreDato']}",
         )
         label_ordredato.grid(row=0,column=1,sticky="nw", padx=10, pady=10)
-        
+
         knapp_genere_faktura = customtkinter.CTkButton(
             master=ramme_header,
             text="Generer faktura",
-            command=lambda: self.generer_faktura(ordre)
+            command=lambda: self.generer_faktura()
         )
         knapp_genere_faktura.grid(row=2,column=1,sticky="nw", padx=10, pady=10)
 
@@ -247,7 +247,7 @@ class OrdrerModul(TabellModul):
         else:
             return False                                                        # TODO: Feilhåndtering ?        
 
-    def generer_faktura(self, valgt_ordre):
+    def generer_faktura(self):
         valgt_ordre = self.tree.focus()
         verdier = self.tree.item(valgt_ordre)["values"]
         if not verdier:

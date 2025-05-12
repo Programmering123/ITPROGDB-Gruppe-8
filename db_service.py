@@ -96,3 +96,4 @@ def hent_kunder_med_proc() -> List[Dict[str, Any]]:
         return rows
     finally:
         conn.close()
+
