@@ -33,7 +33,7 @@ class KunderModul(TabellModul):
             "Adresse", 
             "Postnummer"
             ] # TODO: Sjekk ut og hent riktig data.
-        self.ny_knapp_tekst = "Opprett ny kunde"                                # Tekst for knappen for å opprette ny kunde
+        self.vis_detalj_tekst = "Opprett ny kunde"                                # Tekst for knappen for å opprette ny kunde
         self.vis()
     def ekstra_funksjoner(self): # TODO: Fjernes?
         pass
@@ -49,7 +49,7 @@ class KunderModul(TabellModul):
     en funksjon for redigering av kunde - Denne sender med data.
     Eller bare en funksjon som har IF KNr -> rediger else: ny kunde.... 
     """
-    def vis_detaljer_grafisk(self, kundedata: list=[]):
+    def vis_detaljer_grafisk(self, kundedata: list=[]):                         # TODO: Fjernes 
         pass                                                                    # Placeholder for å lage grafisk visning av kunde data.
 
     def vis_detaljer(self, kundedata: list=[]):

@@ -103,7 +103,17 @@ class TabellModul:
             )
         )                                                                       # Binder vis detaljer funksjon til dobbelklikk på rader
         # TODO: Også ha en mulighet for å velge en rad og ha en knapp i meny_ramme som er "Vis detaljer" som blir gyldig ved valg av rad?
-        
+        self.vis_detalj_knapp.configure(state="disabled")                # Deaktiverer detaljknappen til det er valgt en ordrelinje
+        def knapp_oppdater_tilstand(event):
+            print("Oppdaterer knapp tilstand")
+            if self.tree.selection():
+                print("Valgt ordrelinje")
+                self.vis_detalj_knapp.configure(state="normal") # Aktiverer detaljknappen hvis det er valgt en ordrelinje
+            else:
+                print("Ingen ordrelinje valgt")
+                self.vis_detalj_knapp.configure(state="disabled")
+        self.tree.bind("<<TreeviewSelect>>", knapp_oppdater_tilstand)
+
         
 
         # Setter opp kolonneoverskriftene:

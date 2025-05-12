@@ -29,9 +29,30 @@ def lag_faktura(
     unikt_nummer: str,
     kommentar: str,
     vedlegg: str,
-    filnavn: str = "faktura.pdf",
-
+    filnavn: str = "faktura.pdf"
 ) -> None:
+    """
+    Genererer en faktura i PDF-format med spesifiserte detaljer.
+    Returns:
+        None
+    Args:
+        kunde (str): Navn på kunden.
+        adresse (str): Adresse til kunden.
+        postnummer (float): Postnummer til kunden.
+        poststed (str): Poststed til kunden.
+        dato (str): Fakturadato i formatet "YYYY-MM-DD".
+        belop (float): Beløp eks. mva.
+        mva (float): MVA-beløp.
+        total (float): Totalt beløp inkl. mva.
+        betalingsbetingelser (int): Antall dager for betalingsbetingelser.
+        fakturanummer (str): Fakturanummer.
+        ordrenummer (str): Ordrenummer.
+        kundenummer (str): Kundenummer.
+        var_referanse (str): Vår referanse.
+        deres_referanse (str): Deres referanse.
+        betalingsinformasjon (str): Betalingsinformasjon.
+        ordrelinjer (list): Liste med ordrelinjer, hver linje er en liste med varenr, beskrivelse, antall og pris.
+    """
     #beregner forfallsdato
     fakturadato = datetime.strptime(dato, "%Y-%m-%d")  # Konverter dato til datetime-objekt
     forfallsdato = fakturadato + timedelta(days=betalingsbetingelser)# Legg til antall dager
@@ -186,8 +207,4 @@ def lag_faktura(
     pdf.output(filsti)
     print (ordrelinjer)
   
-
-"""Genererer en faktura i PDF-format med spesifiserte detaljer.
-    """
-Returns:    None
 

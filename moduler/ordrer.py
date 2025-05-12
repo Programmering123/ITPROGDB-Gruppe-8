@@ -24,7 +24,7 @@ class OrdrerModul(TabellModul):
     def hent_data(self):
         return hent_ordrer()  # Henter kunder fra databasen
     
-        # Her lager jeg detaljvisning av varen:
+    # Her lager jeg detaljvisning av varen:
     def vis_detaljer(self, ordre):
         """ Funksjon for å vise detaljvisning av ordren."""
         
@@ -93,7 +93,7 @@ class OrdrerModul(TabellModul):
         ramme_kundeinfo.grid(row=1, column=1, sticky="nsew", padx=10, pady=10)
 
 
-        if(kundeinfo != None):                                          # Sikrer at kundeinfo er
+        if(kundeinfo != None):                                                  # Sikrer at kundeinfo er
             (
                 kunde_id, 
                 kunde_fornavn, 
@@ -101,7 +101,7 @@ class OrdrerModul(TabellModul):
                 kunde_adresse, 
                 kunde_postnr, 
                 kunde_poststed
-            ) = kundeinfo                                               # Setter kundeinfo til variabler
+            ) = kundeinfo                                                       # Setter kundeinfo til variabler
 
             # label for kunde_id:
             label_kunde_id = customtkinter.CTkLabel(
@@ -224,15 +224,6 @@ class OrdrerModul(TabellModul):
         vis_detalj_knapp.configure(
             state="disabled"
         )
-        def knapp_oppdater_tilstand(event):
-            print("Oppdaterer knapp tilstand")
-            if tabell_ordrelinjer.selection():
-                print("Valgt ordrelinje")
-                vis_detalj_knapp.configure(state="normal") # Aktiverer detaljknappen hvis det er valgt en ordrelinje
-            else:
-                print("Ingen ordrelinje valgt")
-                vis_detalj_knapp.configure(state="disabled")
-        tabell_ordrelinjer.bind("<<TreeviewSelect>>", knapp_oppdater_tilstand)
 
     def vis_ramme_detalj(self)->bool:
         """ Enkel funksjon for å løfte og vise detaljvisningrammen."""
@@ -305,13 +296,11 @@ class OrdrerModul(TabellModul):
             )
         print(f"Faktura generert:{fakturanummer}.pdf")
 
-
     def lukk_detaljer(self):
         if self.detalj_visning_ramme:
             self.detalj_visning_ramme.lower(self.tabell_visning_ramme)          # Flytter detaljvisningrammen i bakgrunnen
             for data in self.detalj_visning_ramme.winfo_children():
                 data.destroy()
-
 
 # GUI definisjoner
 

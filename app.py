@@ -72,13 +72,13 @@ class App(customtkinter.CTk):
         self.bakgrunnsbilde = customtkinter.CTkImage(
             dark_image=Image.open("assets/bakgrunn5.png"),  # Legg til bildet ditt her
             light_image=Image.open("assets/bakgrunn5.png"),
-            size=(1280, 720)  # Tilpass størrelsen på bildet til vinduet
+            size=(1280, 720)  # Tilpass størrelsen på bildet til vinduet        # TODO: Hvorfor er det to ganger?
         )
         self.bakgrunn_label = customtkinter.CTkLabel(  
             master=self.visningsrute,
             image=self.bakgrunnsbilde,
             text=""  # Ingen tekst, kun bilde
-    )
+        )
         self.bakgrunn_label.grid(row=0, column=0, sticky="nsew")
         # Oppretter ny label med velkomstmelding:
         self.tekst_startvindu = customtkinter.CTkLabel(
