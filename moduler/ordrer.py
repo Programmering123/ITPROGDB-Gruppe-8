@@ -76,6 +76,14 @@ class OrdrerModul(TabellModul):
             text=f"Ordredato: {ordredata['OrdreDato']}",
         )
         label_ordredato.grid(row=0,column=1,sticky="nw", padx=10, pady=10)
+        
+        knapp_genere_faktura = customtkinter.CTkButton(
+            master=ramme_header,
+            text="Generer faktura",
+            command=lambda: self.generer_faktura(ordre)
+        )
+        knapp_genere_faktura.grid(row=2,column=1,sticky="nw", padx=10, pady=10)
+
     def opprett_kundeinfo(self, kundeinfo:dict)->bool:
         """ Funksjon for å opprette kundeinfo i detaljvisningrammen."""
         ramme_kundeinfo = customtkinter.CTkFrame(
@@ -237,12 +245,7 @@ class OrdrerModul(TabellModul):
             self.detalj_visning_ramme.grid(padx=10, pady=10)                    # Plassering av ramme
             return True
         else:
-            return False                                                        # TODO: Feilhåndtering ?        knapp_genere_faktura = customtkinter.CTkButton(
-            master=ramme_header,
-            text="Generer faktura",
-            command=lambda: self.generer_faktura(ordre)
-        )
-        knapp_genere_faktura.grid(row=2,column=1,sticky="nw", padx=10, pady=10)
+            return False                                                        # TODO: Feilhåndtering ?        
 
     def generer_faktura(self, valgt_ordre):
         valgt_ordre = self.tree.focus()
