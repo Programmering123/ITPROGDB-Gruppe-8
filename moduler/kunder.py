@@ -9,7 +9,7 @@ from api.database import hent_kunder, kunde_oppdater, kunde_opprett # Importer f
 from moduler.tabellmodul import TabellModul # Importer TabellModul fra tabellmodul.py
 from moduler.hjelpere import validering_postnr_sanntid                          # Importer valideringsfunksjon for postnummer 
 from moduler.hjelpere import validering_adresse_sanntid                         # Importer valideringsfunksjon for adresse 
-from moduler.hjelpere import validering_navn_sanntid                         # Importer valideringsfunksjon for adresse 
+from moduler.hjelpere import validering_navn_sanntid                            # Importer valideringsfunksjon for adresse 
 
 """ Her lager vi en kunde modul som arver fra TabellModul."""
 """
@@ -33,16 +33,10 @@ class KunderModul(TabellModul):
             "Adresse", 
             "Postnummer"
             ] # TODO: Sjekk ut og hent riktig data.
+        self.ny_knapp_tekst = "Opprett ny kunde"                                # Tekst for knappen for å opprette ny kunde
         self.vis()
-    def ekstra_funksjoner(self):
-        self.knapp_opprett_kunde = customtkinter.CTkButton(
-            master=self.meny_ramme, # Plassering av knapp for å opprette ny kunde
-            text="Opprett ny kunde",
-            command=self.vis_detaljer,
-            width=30,
-        )
-        self.knapp_opprett_kunde.grid(row=0, column=3, sticky="ne", padx=10, pady=10) # Plassering av knapp for å opprette ny kunde
-
+    def ekstra_funksjoner(self): # TODO: Fjernes?
+        pass
     def hent_data(self):
         return hent_kunder()  # Henter kunder fra databasen
     
@@ -70,12 +64,10 @@ class KunderModul(TabellModul):
             self.kundenummer, fornavn, etternavn, adresse, postnr = kundedata   # Legger dataen til passende variabler
         
         ## Ha en funksjon her som drar inn GUI innholdet.
-        if self.detalj_visning_ramme:                                           # Sjekker om detaljvisningrammen er opprettet. # TODO: Har ingen else... trenger vi den?
-            self.detalj_visning_ramme.lift(self.tabell_visning_ramme)           # Løfter detaljvisningrammen opp så den blir synlig.
-            self.detalj_visning_ramme.grid(row=0, column=0, sticky="nsew", padx=10, pady=10) # Plassering av ramme
-            self.detalj_visning_ramme.grid_rowconfigure(0, weight=0)            # Rad 0 skal holde seg til innholdet.
-            self.detalj_visning_ramme.grid_rowconfigure(1, weight=1)            # Rad 1 skal fylle opp plassen i vinduet.
-            self.detalj_visning_ramme.grid_columnconfigure(0, weight=1)         # Kolonne 0 skal fylle opp plassen i vinduet.
+
+        if not self.vis_detalj_ramme():
+            return False
+
 
         # lager en ramme info ramme for å opprette ny kunde:
         ramme_tittel = customtkinter.CTkFrame(
@@ -89,7 +81,7 @@ class KunderModul(TabellModul):
         ramme_hoved.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
 
         # Tittel for vindu:
-        self.lag_tittel(ramme_tittel)                # Lager tittel for vindu, med kundedata hvis det er sendt inn.
+        self.lag_tittel(ramme_tittel)                                           # Lager tittel for vindu, med kundedata hvis det er sendt inn.
 
         # Inputfelt for kunderedigering:
         self.input_fornavn = self.lag_inputfelt(
@@ -185,6 +177,21 @@ class KunderModul(TabellModul):
             feilmelding.grid_forget()                                           # Skjuler feilmelding som standard.
         return etikett, inputfelt, feilmelding
 
+    def vis_detalj_ramme(self) -> bool:
+        if self.detalj_visning_ramme:                                           # Sjekker om detaljvisningrammen er opprettet. # TODO: Har ingen else... trenger vi den?
+            self.detalj_visning_ramme.lift(self.tabell_visning_ramme)           # Løfter detaljvisningrammen opp så den blir synlig.
+            self.detalj_visning_ramme.grid(
+                row=0, column=0, sticky="nsew", padx=10, pady=10
+            )                                                                   # Plassering av ramme
+            self.detalj_visning_ramme.grid_rowconfigure(0, weight=0)            # Rad 0 skal holde seg til innholdet.
+            self.detalj_visning_ramme.grid_rowconfigure(1, weight=1)            # Rad 1 skal fylle opp plassen i vinduet.
+            self.detalj_visning_ramme.grid_columnconfigure(0, weight=1)         # Kolonne 0 skal fylle opp plassen i vinduet.
+            return True
+        else:
+            return False                                                        # TODO: Feilhåndtering hvis detaljvisningrammen ikke er opprettet.
+
+
+
     def lag_knapp_lagre(self, master_: customtkinter.CTkFrame) -> None:
         """
         Lager lagre-knapp for å opprette eller redigere kunde.
@@ -231,6 +238,3 @@ class KunderModul(TabellModul):
                 # TODO: Legg til oppatering av tabellen her.
             except:
                 print("Feil ved oppretting av kunde")                           # TODO: Legg til feilmelding til bruker.
-
-
-

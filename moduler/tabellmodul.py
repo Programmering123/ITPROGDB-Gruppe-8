@@ -8,6 +8,7 @@ class TabellModul:
         self.antall_sider = 1
         self.data = []                                                          # Tom liste. Settes av SubClass.
         self.kolonner = []                                                      # Tom liste. Settes av SubClass.
+        self.vis_detalj_tekst = ""                                                # Setter ny knapp tekst til None
 
     def vis(self):
         # Setter opp grunndata:
@@ -61,14 +62,15 @@ class TabellModul:
             command=lambda: self.let_i_data(leteord.get()), 
         )
         knapp_søk.grid(row=0, column=1, sticky="nw", padx=10, pady=10)          # Plassering av søkeknapp
-        # Øvre meny, Opprett ny kunde: TEST
-        knapp_ny = customtkinter.CTkButton(
-            master=self.meny_ramme, # Plassering av knapp for å opprette ny kunde
-            text="Opprett ny kunde",
-            command=self.vis_detaljer,
-            width=30,
-        )
-        knapp_ny.grid(row=0, column=3, sticky="ne", padx=10, pady=10)           # Plassering av knapp for å opprette ny kunde
+        # Øvre meny, Opprett ny kunde: TEST # TODO: Fullfør denne
+        if self.vis_detalj_tekst :
+            self.vis_detalj_knapp = customtkinter.CTkButton(
+                master=self.meny_ramme, 
+                text=self.vis_detalj_tekst,
+                command=self.vis_detaljer,
+                width=30,
+            )
+            self.vis_detalj_knapp.grid(row=0, column=3, sticky="ne", padx=10, pady=10)# Plassering av knapp for å opprette ny kunde
 
         
         # Tabell ramme, Oppsett:
@@ -170,7 +172,7 @@ class TabellModul:
         raise NotImplementedError("Denne funksjonen må implementeres i SubClass.")
     
     # Blank definering av detaljvisning, må implementeres i SubClass:
-    def vis_detaljer(self, data):
+    def vis_detaljer(self, data:list=[]):
         """Viser detaljer for valgt rad. Denne funksjonen må implementeres i SubClass."""
         raise NotImplementedError("Denne funksjonen må implementeres i SubClass.")
 

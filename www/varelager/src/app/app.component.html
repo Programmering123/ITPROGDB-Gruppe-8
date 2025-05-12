@@ -1,0 +1,43 @@
+
+  <div class="container"> <h1>Varelager</h1> <div *ngIf="isLoading" class="loading-indicator">Laster varer...</div>
+
+  <div class="table-container" *ngIf="!isLoading && dataKilde.data.length > 0">
+    <table mat-table [dataSource]="dataKilde" matSort matSortActive="VNr" matSortDirection="asc" matSortDisableClear>
+
+      <ng-container matColumnDef="VNr">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Varenummer</th>
+        <td mat-cell *matCellDef="let element">{{element.VNr}}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="Betegnelse">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Beskrivelse</th>
+        <td mat-cell *matCellDef="let element">{{element.Betegnelse}}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="Pris">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Pris pr stk</th>
+        <td mat-cell *matCellDef="let element">{{element.Pris }}</td>
+      </ng-container>
+
+      <ng-container matColumnDef="Antall">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>Antall</th>
+        <td mat-cell *matCellDef="let element">{{element.Antall}}</td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <mat-paginator 
+        [pageSize]="25" 
+        [pageSizeOptions]="[25, 50, 100]" 
+        [showFirstLastButtons]="true"
+        aria-label="Velg side for varelageret">
+    </mat-paginator>
+  </div>
+
+  <div *ngIf="!isLoading && dataKilde.data.length === 0">
+    Ingen varer funnet.
+  </div>
+
+</div>

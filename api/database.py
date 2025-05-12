@@ -6,6 +6,7 @@ from dotenv import load_dotenv, dotenv_values
 import os
 from pathlib import Path
 from typing import Dict, Any, Optional, Union
+import decimal
 
 # Henter variabler fra .env filen
 dotenv_path = Path('secrets.env')
@@ -97,6 +98,95 @@ def hent_varelager():
     except mysql.connector.Error as err:
         print(f"Feil ved henting av varelager: {err}")
         return []
+def hent_varer():
+    databasen = None
+    spørring = None
+    try:
+        databasen = tilkobling_database()
+        if not databasen or not databasen.is_connected():
+            print("Feil: Kunne ikke koble til database eller ugyldig forbindelse.")
+            return [] # Returner tom liste hvis ingen gyldig tilkobling
+
+        spørring = databasen.cursor()
+        
+        # Sjekk kolonnenavn og tabellnavn mot din faktiske database (varehusdb.sql)
+        # I varehusdb.sql er det VareID, Navn, AntallPåLager, Pris i tabellen Vare
+        # Hvis du bruker VNr etc., må du sørge for at databasen matcher
+        sql_query = "SELECT VNr, Betegnelse, Antall, Pris FROM vare LIMIT 1000"
+        # Eller, for å matche varehusdb.sql (anbefalt hvis det er din kilde):
+        # sql_query = "SELECT VareID, Navn, AntallPaLager, Pris FROM Vare LIMIT 1000"
+        # kolonnenavn_for_zip = ["VareID", "Navn", "AntallPaLager", "Pris"]
+        kolonnenavn_for_zip = ["VNr", "Betegnelse", "Antall", "Pris"] # Bruker dine opprinnelige navn
+        spørring.execute(sql_query)
+        fetched_tuples = spørring.fetchall()
+        
+        # Din eksisterende linje for å lage en liste av dictionaries
+        resultat_liste_med_dicts = [dict(zip(kolonnenavn_for_zip, rad)) for rad in fetched_tuples]
+        
+        # Nå, iterer gjennom listen og konverter Pris og Antall
+        for vare_dict in resultat_liste_med_dicts:
+            # Konverter Pris
+            if 'Pris' in vare_dict and vare_dict['Pris'] is not None:
+                if isinstance(vare_dict['Pris'], decimal.Decimal):
+                    vare_dict['Pris'] = float(vare_dict['Pris'])
+                else:
+                    try: # Hvis det allerede er en streng eller et annet tallformat
+                        vare_dict['Pris'] = float(vare_dict['Pris'])
+                    except (ValueError, TypeError):
+                        print(f"Advarsel: Kunne ikke konvertere Pris '{vare_dict['Pris']}' til float for VNr '{vare_dict.get('VNr')}'. Setter til None.")
+                        vare_dict['Pris'] = None # Eller en annen feilhåndtering
+            
+            # Sikre at Antall er int (bør være det fra databasen hvis kolonnen er INT)
+            if 'Antall' in vare_dict and vare_dict['Antall'] is not None:
+                if isinstance(vare_dict['Antall'], decimal.Decimal): # I tilfelle Antall også er Decimal
+                    vare_dict['Antall'] = int(vare_dict['Antall'])
+                else:
+                    try:
+                        vare_dict['Antall'] = int(vare_dict['Antall'])
+                    except (ValueError, TypeError):
+                        print(f"Advarsel: Kunne ikke konvertere Antall '{vare_dict['Antall']}' til int for VNr '{vare_dict.get('VNr')}'. Setter til None.")
+                        vare_dict['Antall'] = None # Eller en annen feilhåndtering
+        
+        return resultat_liste_med_dicts
+
+    except mysql.connector.Error as db_err:
+        print(f"Databasefeil ved henting av varer: {db_err}")
+        return []
+    except AttributeError as attr_err:
+        # Dette kan skje hvis f.eks. databasen=None og du prøver databasen.cursor()
+        print(f"Attributtfeil i hent_varer (muligens et databaseobjekt er None): {attr_err}")
+        return []
+    except Exception as e:
+        # Fang andre uventede feil
+        print(f"En uventet feil oppstod i hent_varer: {type(e).__name__} - {e}")
+        # For mer detaljert feilsøking, kan du logge hele traceback:
+        # import traceback
+        # print(traceback.format_exc())
+        return []
+    finally:
+        # Sørg for å lukke cursor og tilkobling
+        if spørring:
+            try:
+                spørring.close()
+            except Exception as e_cursor:
+                print(f"Feil ved lukking av cursor: {e_cursor}")
+        if databasen and databasen.is_connected():
+            try:
+                databasen.close()
+            except Exception as e_db:
+                print(f"Feil ved lukking av database: {e_db}")
+
+# def hent_varer():
+#     try:
+#         databasen = tilkobling_database() # Koble til databasen
+#         spørring = databasen.cursor() # Dette er en virituell "markør"
+#         spørring.execute("SELECT VNr, Betegnelse, Antall, Pris FROM vare LIMIT 1000") # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
+#         resultat = spørring.fetchall() # Lagrer resultat fra spørring
+#         resultat = [dict(zip(["VNr", "Betegnelse", "Antall", "Pris"], rad)) for rad in resultat]
+#         return resultat # Returnerer resultatet
+#     except mysql.connector.Error as err:
+#         print(f"Feil ved henting av varer: {err}")
+#         return []
 
 # Funksjon for å hente alle kunder.
 def hent_kunder(): #TODO: Korriger denne til å hente en stored procedure i databasen, opprett en stored procedure.
