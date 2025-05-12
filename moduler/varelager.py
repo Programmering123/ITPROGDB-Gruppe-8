@@ -20,3 +20,6 @@ class VarelagerModul(TabellModul):
     def hent_data(self):
         return hent_varelager()  # Henter kunder fra databasen
     
+    def vis_detaljer(self, data):
+        pass
+    

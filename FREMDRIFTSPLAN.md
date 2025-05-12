@@ -17,13 +17,19 @@ KG - Konstantina Goteva
 
 13.04.2025  - Database API
 
-20.04.2025  - Logikk
+20.04.2025  - Logikk 
 
-27.04.2025  - Milepæl - Fungerende BETA. 
+27.04.2025  - Milepæl - Fungerende BETA. ☑️
 
 04.05.2025  - Sikkerhetsteste alt - Har vi nok sikkerhet?
 
-11.05.2025  - Pynte
+11.05.2025  - 
+            Fikse ferdig input til kunder - JEL
+            Lage PDF til faktura. - TT
+            Stored Procedures - KG 
+            Lage mva/total resultat i ordredetaljer - JAH
+            Lage API, webinterface - JEL
+            Mangler noe å gjøre? SE TODO liste i VSCode.
 
 18.05.2025  - PDF faktura. 
 

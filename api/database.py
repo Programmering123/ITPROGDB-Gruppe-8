@@ -3,7 +3,7 @@ import mysql.connector
 from dotenv import load_dotenv, dotenv_values
 import os
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Dict, Any, Optional, Union
 
 # Henter variabler fra .env filen
 dotenv_path = Path('secrets.env')
@@ -115,6 +115,7 @@ def hent_spesifikk_kunde(kunde_id):
             databasen = tilkobling_database() # Koble til databasen
             spørring = databasen.cursor() # Dette er en virituell "markør"
             spørring.execute(f"SELECT kunde.KNr, kunde.Fornavn, kunde.Etternavn, kunde.Adresse, kunde.PostNr, poststed.Poststed FROM kunde INNER JOIN poststed ON kunde.PostNr = poststed.PostNr WHERE kunde.Knr = {kunde_id} LIMIT 1") # TODO: Stored procedure i stedet for spørring
+            
             resultat = spørring.fetchone() # Lagrer resultat fra spørring
             return resultat # Returnerer resultatet
         except mysql.connector.Error as err:
@@ -123,6 +124,131 @@ def hent_spesifikk_kunde(kunde_id):
     else:
         print("Ingen kunder valgt.")
         return []
+    
+def hent_postnr():
+    """
+    Funksjon for å hente postnr fra databasen
+    Returns:
+        List of postnr
+    """
+    try:
+        databasen = tilkobling_database() # Koble til databasen
+        spørring = databasen.cursor() # Dette er en virituell "markør"
+        spørring.execute("SELECT PostNr FROM poststed") # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
+        resultat = spørring.fetchall() # Lagrer resultat fra spørring
+        return [postnr[0] for postnr in resultat] # Returnerer resultatet som liste med bare postnr
+    except mysql.connector.Error as err:
+        print(f"Feil ved henting av postnr: {err}")
+        return []
+
+def kunde_valider_helper(streng: Union[str, int], fra: int, til: int, tall: bool= False, postnr: bool=False)->bool:
+    """
+    Også en funksjon for validering Testing. Dynamisk sjekk om streng stemmer med kravene.
+    Args:
+        streng: Streng for testing
+        fra: Minimum lengde
+        til: Maksimum lengde
+        tall: True hvis int, standard str
+        postnr: True hvis postnr, standard False
+    Returns:
+        Bool
+    """
+    if tall:  
+        if not isinstance(streng, int):
+            return False                                                        
+        return fra < streng < til                                               # returnerer True hvis det er mellom angitt verdi
+    elif postnr:
+        if not streng.isdigit():                                                # Må være kun tall
+            return False
+        return len(streng)==4                                                   # returnerer True hvis det er 4 siffer
+    else:
+        if not isinstance(streng, str):
+            return False 
+        return fra < len(streng) < til 
+    
+tilgjengelige_postnumre: list[str]= hent_postnr()                               # Henter postnr fra databasen denne trengs bare hentes 1 gang.
+
+
+def kunde_oppdater(
+        kundenummer: int,
+        fornavn: str,
+        etternavn: str,
+        adresse: str,
+        postnr: int
+)-> bool:
+    """ 
+    Funksjon for å oppdatere en kunde i databasen. 
+    Args: 
+        kundenummer: int mer enn 0 og maks 10 desimaler
+        fornavn: String på mer enn 2 karakterer og mindre enn 32 karakterer.
+        etternavn: String på mer enn 2 karakterer og mindre enn 32 karakterer. 
+        adresse: String på mer enn 2 karakterer og mindre nn 32 karakterer.
+        postnr: int på 4 tall.
+    Returns:
+        True, hvis vellykket
+    Raises:
+        ValueError: Hvis feil inndata.
+        ConnectionError: Hvis feil med tilkobling.
+    """
+    if(
+        kunde_valider_helper(kundenummer, 2, 999999999, tall=True) and
+        kunde_valider_helper(fornavn, 2, 32) and
+        kunde_valider_helper(etternavn, 2, 32) and
+        kunde_valider_helper(adresse, 2, 32) and
+        kunde_valider_helper(postnr, 0000, 9999, postnr=True)
+    ):
+        kunde_data = (kundenummer, fornavn, etternavn, adresse, postnr)
+        try:
+            databasen = tilkobling_database() # koble til databasen
+            spørring = databasen.cursor() 
+            spørring.callproc('kunde_oppdater', kunde_data ) 
+            databasen.commit()
+            return True
+        except:
+            raise ConnectionError("Tilkobling til database mislykket")
+        finally:
+            databasen.close()
+    else:
+        raise ValueError("Angitt data er ugyldig")
+
+def kunde_opprett( 
+        fornavn: str, 
+        etternavn: str, 
+        adresse: str,   
+        postnr: int    
+)->bool:
+    """
+    Funksjon for å legge til en kunde i databasen. 
+    Args:
+        fornavn: String på mer enn 2 karakterer og mindre enn 32 karakterer.
+        etternavn: String på mer enn 2 karakterer og mindre enn 32 karakterer. 
+        adresse: String på mer enn 2 karakterer og mindre nn 32 karakterer.
+        postnr: int på 4 tall.
+    Returns:
+        True, hvis vellykket
+    Raises:
+        ValueError: Hvis feil inndata.
+        ConnectionError: Hvis feil med tilkobling.
+    """
+    if(
+        kunde_valider_helper(fornavn, 2, 32) and
+        kunde_valider_helper(etternavn, 2, 32) and
+        kunde_valider_helper(adresse, 2, 32) and
+        kunde_valider_helper(postnr, 3, 5)
+    ):
+        kunde_data = (fornavn, etternavn, adresse, postnr)
+        try:
+            databasen = tilkobling_database()                                   
+            spørring = databasen.cursor() 
+            spørring.callproc('kunde_opprett', kunde_data)                      # Sender kunde_data til kunde_opprett SP
+            databasen.commit()
+            return True
+        except:
+            raise ConnectionError("Tilkobling til database mislykket")
+        finally:
+            databasen.close()
+    else:
+        raise ValueError("Angitt data er ugyldig")
 
 # Referanse: https://www.w3schools.com/python/python_mysql_select.asp
 # print(mydb)

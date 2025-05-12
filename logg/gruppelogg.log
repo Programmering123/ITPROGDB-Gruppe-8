@@ -13,8 +13,27 @@ Kommentert litt kode i app.py og diskutert litt rundt GUI.
 09.04.2025 20:00-20:30
 Vi legger inn TODO tree Extension i VSCode for å ha oversikt over hva som må gjøres hvor..  https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree 
 
+
+
 23.04.2025 20:00-20:30
 Gjort visuelle endringer i layout, logo lagt inn, kjør derfor pip install -r ./requirements.txt for å få programmet til å kjøre.. 
 Har endret visning, så nå begynner programmet tabellmodul.py er nydelig bygget. Farger er lagt inn theme.json, og er lagt 
 inn i app.py linje 13 "customtkinter.set_default_color_theme". 
 'Rapport tverrfaglig prosjekt.docx' påbegynt og ligger tilgjengelig i Filer 'Tverr PROG_DB Gruppe 8' på Teams. 
+
+30.04.2025 20:00-21:20
+Gjennomgang av GUI og funksjoner, begynner å komme oss innenfor det vi ønsker å oppnå. 
+Diskutert hvordan vi kan optimalisere koden og gjøre den mer modulær. 
+Fordelt oppgaver blandt oss. JA ser på Total Sum i ordredetaljer, TT ser på en hovedskjerm og 
+en trykkefunksjon for å komme tilbake til hovedside. JEL ser på videre av ny_kunde/rediger kunde.
+Planlagt å implementere en ny funksjon for å håndtere brukerinnstillinger i app.py. 
+Avsluttet med å oppdatere fremdriftsplanen på GitHub.
+
+01.05.2025 20:00-
+Kommenterer litt kode, planlegger en refaktorering... og ser på løsning av behandling av kunde
+04.05.2025 19:00-21:00
+Ryddet opp i koden ihht PEP 8. 
+Laget valideringsfunksjon for redigering av kunde - Spesifikt postnr vindu.
+Laget noen nye SP for kundeoppretting og redigering.
+Prøver å opprette ny branch. for å se hvordan det fungerer.
+
