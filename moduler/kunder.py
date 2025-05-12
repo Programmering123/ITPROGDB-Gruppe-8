@@ -17,3 +17,4 @@ class KunderModul(TabellModul):
 
     def hent_data(self):
         return hent_kunder()  # Henter kunder fra databasen
+    

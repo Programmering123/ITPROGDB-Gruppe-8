@@ -1,7 +1,5 @@
-
-
 # Tester tilkobling til database
-import mysql.connector
+import mysql.connector  
 from dotenv import load_dotenv, dotenv_values
 import os
 from pathlib import Path

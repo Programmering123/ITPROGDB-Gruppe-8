@@ -55,3 +55,12 @@ Set-ExecutionPolicy Unrestricted -Scope Process
 pip install -r .\requirements.txt
 
 Kan testes ved å kjøre pip list, for å se om det er riktige pakker innstallert
+
+# Installer Flask - web-API-rammeverk(vise data i en nettleser eller gi tilgang til eksterne tjenester)
+python -m pip install flask
+# Bekreft installasjonen
+python -m pip show flask
+# Oppdater requirements.txt 
+python -m pip freeze > requirements.txt
+# import flask
+python -m api.app
