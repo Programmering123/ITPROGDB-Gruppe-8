@@ -37,3 +37,8 @@ Laget valideringsfunksjon for redigering av kunde - Spesifikt postnr vindu.
 Laget noen nye SP for kundeoppretting og redigering.
 Prøver å opprette ny branch. for å se hvordan det fungerer.
 
+12.05.2025 20:00-22:00
+Sammenfattet diverse endringer, inkludert oppdatering av GUI og forbedring av brukeropplevelse. 
+Implementert ny funksjon for håndtering av brukerinnstillinger i app.py. 
+Refaktorert koden for bedre lesbarhet og vedlikeholdbarhet.  
+Oppdatert fremdriftsplanen på GitHub og diskutert videre oppgaver for gruppen.
