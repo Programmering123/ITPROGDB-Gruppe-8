@@ -110,7 +110,7 @@ class OrdrerModul(TabellModul):
             text="Generer faktura",
             command=lambda: self.generer_faktura()
         )
-        knapp_genere_faktura.grid(row=2,column=1,sticky="nw", padx=10, pady=10)
+        knapp_genere_faktura.grid(row=2,column=2,sticky="nw", padx=10, pady=10)
 
     def opprett_kundeinfo(self, kundeinfo:dict)->bool:
         """ Funksjon for å opprette kundeinfo i detaljvisningrammen."""
