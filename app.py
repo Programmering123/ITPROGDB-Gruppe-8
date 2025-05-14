@@ -1,6 +1,8 @@
 # import tk
 import customtkinter
 from PIL import Image
+
+from moduler.hoved import Hovedvindu
 from moduler.ordrer import OrdrerModul
 from moduler.varelager import VarelagerModul
 from moduler.kunder import KunderModul
@@ -48,49 +50,31 @@ class App(customtkinter.CTk):
             image=self.bilde,
             width=140,
             height=140,
-            fg_color="lightgrey", #endret farge til å matche grå sidemeny venstre side
-            hover_color="lightgrey", #endret farge til å matche grå sidemeny venstre side
+            fg_color="lightgrey",                                               # Endret farge til å matche grå sidemeny venstre side
+            hover_color="lightgrey",                                            # Endret farge til å matche grå sidemeny venstre side
             text="",
-            command=self.hjem_knapp # Kaller på hjem_knapp funksjonen når knappen trykkes
+            command=lambda: self.vis_modul(Hovedvindu)                          # Viser hovedvinduet når knappen trykkes
         ) 
         self.bildeknapp.grid(row=0, column=0, sticky="n", padx=10, pady=10) 
         # Oppretter knappene i menyen: ( se https://customtkinter.tomschimansky.com/documentation/widgets/button for forklaring )
-        self.knapp = customtkinter.CTkButton(master=self.meny, text="Ordrer", command=lambda: self.vis_modul(OrdrerModul))
+        self.knapp = customtkinter.CTkButton(
+            master=self.meny,
+            text="Ordrer",
+            command=lambda: self.vis_modul(OrdrerModul)
+        )
         self.knapp.grid(row=1, column=0, sticky="n", padx=10, pady=3)
-        self.knapp2 = customtkinter.CTkButton(master=self.meny, text="Varelager", command=lambda: self.vis_modul(VarelagerModul))
+        self.knapp2 = customtkinter.CTkButton(
+            master=self.meny,
+            text="Varelager",
+            command=lambda: self.vis_modul(VarelagerModul)
+        )
         self.knapp2.grid(row=2, column=0, sticky="n", padx=10, pady=3)
-        self.knapp3 = customtkinter.CTkButton(master=self.meny, text="Kunder", command=lambda: self.vis_modul(KunderModul))
+        self.knapp3 = customtkinter.CTkButton(
+            master=self.meny,
+            text="Kunder",
+            command=lambda: self.vis_modul(KunderModul)
+        )
         self.knapp3.grid(row=3, column=0, sticky="n", padx=10, pady=3)
-
-    def hjem_knapp(self):
-        # Funksjon for å vise velkomstvinduet:
-        # Sletter innholdet i visningsruten:
-        for widget in self.visningsrute.winfo_children():
-            widget.destroy()
-       
-        # Setter opp en label i visningsruten som viser en velkomstmelding:
-        self.bakgrunnsbilde = customtkinter.CTkImage(
-            dark_image=Image.open("assets/bakgrunn5.png"),  # Legg til bildet ditt her
-            light_image=Image.open("assets/bakgrunn5.png"),
-            size=(1280, 720)  # Tilpass størrelsen på bildet til vinduet        # TODO: Hvorfor er det to ganger?
-        )
-        self.bakgrunn_label = customtkinter.CTkLabel(  
-            master=self.visningsrute,
-            image=self.bakgrunnsbilde,
-            text=""  # Ingen tekst, kun bilde
-        )
-        self.bakgrunn_label.grid(row=0, column=0, sticky="nsew")
-        # Oppretter ny label med velkomstmelding:
-        self.tekst_startvindu = customtkinter.CTkLabel(
-            master=self.visningsrute,
-            text="Velkommen til startsiden for Varelageret! \n" \
-        "For å navigere videre må du trykke på en knapp i menyen.",
-            text_color="black",
-            font=("Arial", 20, "bold"),
-            corner_radius=0,
-        )
-        self.tekst_startvindu.grid(row=0, column=0, padx=20, pady=20)
-        # Setter opp grid for visningsruten og får den til å ta opp hele høyden og bredden:
 
     
     # Visningsrute:
@@ -105,31 +89,8 @@ class App(customtkinter.CTk):
         # Setter opp grid for visningsruten og får den til å ta opp hele høyden og bredden:
         self.visningsrute.grid_rowconfigure(0, weight=1)
         self.visningsrute.grid_columnconfigure(0, weight=1)
+        self.vis_modul(Hovedvindu)                                              # Viser hovedvinduet i visningsruten ved oppstart av programmet.
 
-        # Setter opp en label i visningsruten som viser en velkomstmelding:
-        self.bakgrunnsbilde = customtkinter.CTkImage(
-            dark_image=Image.open("assets/bakgrunn5.png"),  # Legg til bildet ditt her
-            light_image=Image.open("assets/bakgrunn5.png"),
-            size=(1280, 720)  # Tilpass størrelsen på bildet til vinduet
-        )
-        self.bakgrunn_label = customtkinter.CTkLabel(
-            master=self.visningsrute,
-            image=self.bakgrunnsbilde,
-            text=""  # Ingen tekst, kun bilde
-        )
-        self.bakgrunn_label.grid(row=0, column=0, sticky="nsew")
-        #oppretter ny label med velkomstmelding:
-        # Setter opp en label i visningsruten som viser en velkomstmelding:
-        self.tekst_startvindu = customtkinter.CTkLabel(
-        master=self.visningsrute,
-        text="Velkommen til startsiden for Varelageret! \n" \
-        "For å navigere videre må du trykke på en knapp i menyen.",
-        text_color="black",
-        font=("Arial", 20, "bold"),
-        corner_radius=6,
-        )
-        # Setter opp en label i visningsruten som viser en velkomstmelding:
-        self.tekst_startvindu.grid(row=0, column=0, padx=20, pady=20)
 
 
     def vis_modul(self, modul_klasse):
