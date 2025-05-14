@@ -22,4 +22,11 @@ class VarelagerModul(TabellModul):
     
     def vis_detaljer(self, data):
         pass
-    
+
+    def knapp_detaljer_opprett(self, _master):
+        pass                                                                    # Fjerner knappen for detaljer i varelageret, da det ikke er nødvendig å vise detaljer for hver enkelt vare.
+
+    def opprett_knapp_detaljer(self, _master):
+        pass                                                                    # Fjerner knappen for detaljer i varelageret, da det ikke er nødvendig å vise detaljer for hver enkelt vare.
+    def bind_tabell_valg(self):
+        pass

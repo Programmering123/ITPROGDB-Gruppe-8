@@ -19,14 +19,42 @@ class OrdrerModul(TabellModul):
             "Betalt Dato",
             "Kunde ID"
             ] # TODO: Sjekk ut og hent riktig data. Egentlig bare finne ut hva vi trenger å vise av data.
-        self.vis_detalj_tekst = "Vis detaljer"                                  # Tekst for detaljvisning
+        self.knapp_detaljer_betinget = True
+        # tabell_visning_ramme = self.tabell_visning_ramme                      # Henter tabellvisningrammen fra TabellModul
+        # self.vis_detalj_knapp()
+    # def vis_innhold(self):
+    #     super().vis_innhold()                                                   # Kaller på vis_innhold() fra TabellModul for å vise innholdet i tabellen
+    
 
     def hent_data(self):
-        return hent_ordrer()  # Henter kunder fra databasen
+        return hent_ordrer()                                                    # Overstyrer hent_data() fra TabellModul for å hente ordrer fra databasen
     
-    # Her lager jeg detaljvisning av varen:
+    
+    def knapp_detaljer_opprett(self, ramme:customtkinter.CTkFrame)->None:
+        """
+        Opprettelse av detaljer funksjon, denne kontrolleres av mesterklasse.
+        Args:
+            ramme (customtkinter.CTkFrame): Ramme der knappen skal opprettes.
+        """
+        self.knapp_detaljer = customtkinter.CTkButton(
+            master=ramme, 
+            text="Vis detaljer",
+            command=lambda: self.vis_detaljer(                                  # Bruker en lambda for å sende argumenter
+                self.tabell.item(self.tabell.focus())['values']                 # Sender verdiene til valgt rad som argument til vis_detaljer()
+            ),                                                                  
+            state="disabled",                                                   # Setter knappen til disabled , blir styrt av self.knapp_detaljer_betinget             
+            width=140,
+        )
+        self.knapp_detaljer.grid(row=0, column=3, sticky="ne", padx=10, pady=10)
+
+        
+    # Detaljvisning av ordre:
     def vis_detaljer(self, ordre):
-        """ Funksjon for å vise detaljvisning av ordren."""
+        """
+        Funksjon for å vise detaljer om orderen.
+        Args:
+            ordre (tuple): Informasjon om valgt ordre fra tabell.
+        """
         
         if ordre != None:
             ordre_id, ordre_kunde_id = ordre[0], ordre[4]                       # Henter ordrenummeret og kundenummeret fra den valgte ordren
@@ -64,7 +92,7 @@ class OrdrerModul(TabellModul):
         )
         knapp_lukk.grid(row=0,column=2,sticky="w", padx=10, pady=10)            # Plassering av lukkeknapp
 
-        # label for ordrenummer:
+        # etikett for ordrenummer:
         label_ordrenummer = customtkinter.CTkLabel(
             master=ramme_header,
             text=f"Ordrenummer: {ordredata['OrdreNr']}",
@@ -142,7 +170,6 @@ class OrdrerModul(TabellModul):
     def opprett_ordreinfo(self, ordredata:dict, ordrelinjer:dict)->bool:
         """ Funksjon for å opprette ordreinfo i detaljvisningrammen."""
         # ramme for ordreinfo:
-        vis_detalj_knapp = self.vis_detalj_knapp                                # Henter detaljknappen fra TabellModul
         ramme_ordreinfo = customtkinter.CTkFrame(
             master=self.detalj_visning_ramme, 
             )
@@ -221,9 +248,6 @@ class OrdrerModul(TabellModul):
             text=f"Betalingsstatus: {'Betalt '+str(ordredata['BetaltDato']) if ordredata['BetaltDato'] != None else 'Ikke betalt'}",
         )
         etikett_betalt.grid(row=2, column=0, sticky="nw", padx=10, pady=10)        
-        vis_detalj_knapp.configure(
-            state="disabled"
-        )
 
     def vis_ramme_detalj(self)->bool:
         """ Enkel funksjon for å løfte og vise detaljvisningrammen."""
@@ -239,8 +263,8 @@ class OrdrerModul(TabellModul):
             return False                                                        # TODO: Feilhåndtering ?        
 
     def generer_faktura(self):
-        valgt_ordre = self.tree.focus()
-        verdier = self.tree.item(valgt_ordre)["values"]
+        valgt_ordre = self.tabell.focus()
+        verdier = self.tabell.item(valgt_ordre)["values"]
         if not verdier:
             print("Ingen ordre valgt.")
             return

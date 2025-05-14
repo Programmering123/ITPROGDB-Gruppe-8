@@ -32,26 +32,33 @@ class KunderModul(TabellModul):
             "Etternavn", 
             "Adresse", 
             "Postnummer"
-            ] # TODO: Sjekk ut og hent riktig data.
-        self.vis_detalj_tekst = "Opprett ny kunde"                                # Tekst for knappen for å opprette ny kunde
-        self.vis()
-    def ekstra_funksjoner(self): # TODO: Fjernes?
-        pass
-    def hent_data(self):
-        return hent_kunder()  # Henter kunder fra databasen
-    
-    """ Funksjon for å opprette kunde i databasen: """
-    """ 
-    Denne har jeg lyst til å lage dynamisk. 
-    Tenketanker:
-    opprette det visuelle i en funksjon
-    en funksjon for oppretting av ny kunde og
-    en funksjon for redigering av kunde - Denne sender med data.
-    Eller bare en funksjon som har IF KNr -> rediger else: ny kunde.... 
-    """
-    def vis_detaljer_grafisk(self, kundedata: list=[]):                         # TODO: Fjernes 
-        pass                                                                    # Placeholder for å lage grafisk visning av kunde data.
+            ]                                                                   
+        self.knapp_detaljer_betinget = False
 
+    def knapp_detaljer_opprett(self, _master):
+        """
+        Opprettelse av universal knapp, denne kontrolleres av mesterklasse.
+        Args:
+            _master (customtkinter.CTkFrame): Ramme der knappen skal opprettes.
+        """
+        self.knapp_detaljer = customtkinter.CTkButton(
+            master=_master, 
+            text="Opprett ny kunde",                                            # Tekst for knappen for å opprette ny kunde
+            command=self.vis_detaljer,                                                                  
+            state="normal",                                                     # Setter knapp til disabled hvis det ikke er valgt noe
+            width=140,
+        )
+        self.knapp_detaljer.grid(row=0, column=3, sticky="ne", padx=10, pady=10)
+
+
+
+    def knapp_oppdater_tilstand(self, event):
+        pass                                                                    # Fjerner funksjon for å oppdatere tilstand på knappen
+
+    def hent_data(self):
+        """Henter data fra databasen og returnerer det som en liste."""
+        return hent_kunder()                                                    # Henter kundedata fra databasen
+    
     def vis_detaljer(self, kundedata: list=[]):
         """ 
         Denne funksjonen brukes i kunder.py til å vise redigeringsvindu
@@ -63,9 +70,8 @@ class KunderModul(TabellModul):
         if len(kundedata) != 0:
             self.kundenummer, fornavn, etternavn, adresse, postnr = kundedata   # Legger dataen til passende variabler
         
-        ## Ha en funksjon her som drar inn GUI innholdet.
-
         if not self.vis_detalj_ramme():
+            print("Feil ved oppretting av detaljvisningramme")                  # TODO: Legg til feilmelding til bruker.
             return False
 
 
@@ -107,7 +113,7 @@ class KunderModul(TabellModul):
             self.input_adresse[1].insert(0, adresse)
             self.input_postnr[1].insert(0, postnr)
 
-    def lag_tittel(self, master_: customtkinter.CTkFrame) -> None:
+    def lag_tittel(self, ramme: customtkinter.CTkFrame) -> None:
             """
             Lager tittel for redigering eller oppretting.
             Argumenter:
@@ -118,11 +124,12 @@ class KunderModul(TabellModul):
             else:
                 tittel="Opprett ny kunde"
             etikett_tittel = customtkinter.CTkLabel(
-                master=master_,
+                master=ramme,
                 text=tittel,
                 font=("Roboto", 20),
             )
             etikett_tittel.grid(row=0, column=0, sticky="nsew", padx=10, pady=10)
+
     def lag_inputfelt(
             self, 
             ramme: customtkinter.CTkFrame, 

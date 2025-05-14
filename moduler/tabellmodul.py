@@ -6,36 +6,86 @@ class TabellModul:
         self.master = master
         self.aktuell_side = 1
         self.antall_sider = 1
-        self.data = []                                                          # Tom liste. Settes av SubClass.
-        self.kolonner = []                                                      # Tom liste. Settes av SubClass.
-        self.vis_detalj_tekst = ""                                                # Setter ny knapp tekst til None
+        self.data = []                                                          # Tom liste. Settes av subklasse.
+        self.kolonner = []                                                      # Tom liste. Settes av subklasse.
+        self.detalj_visning_ramme:customtkinter.CTkFrame = None 
+        self.tabell_visning_ramme:customtkinter.CTkFrame = None
+        self.tabell:ttk.Treeview = None                                         # Setter ny tabell til None
+        self.knapp_detaljer:customtkinter.CTkButton = None                      # Gjør knapp tilgjengelig for subklasser  
+        self.knapp_detaljer_betinget = False                                    # Setter knapp til False, for å sjekke om den er opprettet i subklasse
 
-    def vis(self):
+    def vis_innhold(self):
+        """Funksjon for å vise innholdet i tabellen."""
         # Setter opp grunndata:
-        self.data = self.hent_data()                                            # Henter data fra databasen
+        self.data = self.hent_data()                                            # Henter data fra databasen 
         self.vist_data = self.data                                              # Kopierer dataene til vist_data
         self.antall_sider = len(self.data) // 20 + 1                            # Beregner antall sider basert på antall rader i varelageret
+    
+        self.opprett_rammer()
 
-        # Lager 2 rammer for å kunne vise detaljer i en annen ramme:
-        # Ramme for å vise tabelllisten:
-        tabell_visning_ramme = customtkinter.CTkFrame(
+        self._opprett_meny_topp()
+
+        self._opprett_tabell()
+
+        self._opprett_meny_bunn()
+        
+        self.oppdater_tabell()                                                  # Kaller oppdater_tabell for å vise første side av dataene i tabellen
+
+
+
+    def knapp_detaljer_opprett(self, _master):
+        """
+        Dette er en tom funksjon som skal overstyres av submoduler.
+        Kopier funksjonen til submodulene, fjern kommentering og tilpass den der.
+        Args:
+            _master (customtkinter.CTkFrame): Ramme der knappen skal opprettes.
+        """
+        # self.knapp_detaljer = customtkinter.CTkButton(
+        #     master=_master, 
+        #     text="",
+        #     command="", 
+        #     state="normal",                     
+        #     width=140,
+        # )
+        # self.knapp_detaljer.grid(row=0, column=3, sticky="ne", padx=10, pady=10)
+
+    def knapp_oppdater_tilstand(self, knapp:customtkinter.CTkButton):
+        """
+        Oppdaterer tilstand til <knapp> basert på valg i tabellen.
+        state "disabled" eller "normal".
+        Args: 
+            knapp (customtkinter.CTkButton): Knappen som skal oppdateres.
+        """
+        print("Oppdaterer knapp tilstand")
+        if self.tabell.selection():
+            print("Valgt ordrelinje")
+            knapp.configure(state="normal") # Aktiverer detaljknappen hvis det er valgt en ordrelinje
+        else:
+            print("Ingen ordrelinje valgt")
+            knapp.configure(state="disabled")
+
+    def opprett_rammer(self):
+        """Funksjon for å opprette rammer for visning av tabell eller detaljer."""
+        self.tabell_visning_ramme = customtkinter.CTkFrame(
             master=self.master, 
             corner_radius=0
-            ) # Lager en ramme for tabellvisning
-        tabell_visning_ramme.grid(row=0, column=0, sticky="nsew")               # Plassering av ramme
-        # Ramme for å vise detaljer:
-        detalj_visning_ramme = customtkinter.CTkFrame(
+            )                                                                   # Lager en ramme for tabellvisning
+        self.tabell_visning_ramme.grid(row=0, column=0, sticky="nsew")          # Plassering av ramme
+        self.detalj_visning_ramme = customtkinter.CTkFrame(
             master=self.master, 
             corner_radius=0
-            ) # Lager en ramme for detaljvisning
-        detalj_visning_ramme.grid(row=0, column=0, sticky="nsew")               # Plassering av ramme
-        self.tabell_visning_ramme = tabell_visning_ramme                        # Setter tabell_visning_ramme til å være lik tabell_visning_ramme
-        self.detalj_visning_ramme = detalj_visning_ramme                        # Setter detalj_visning_ramme til å være lik detalj_visning_ramme
-        detalj_visning_ramme.lower(tabell_visning_ramme)                        # Lagrer detaljvisningrammen i bakgrunnen
-        # Øvre meny, Oppsett:
-        # Lager en ramme for øvre meny:
+            )                                                                   # Lager en ramme for detaljvisning
+        self.detalj_visning_ramme.grid(row=0, column=0, sticky="nsew")          # Plassering av ramme
+        self.detalj_visning_ramme.lower(self.tabell_visning_ramme)              # Setter detaljvisningrammen i bakgrunnen
+        # Setter opp grid for tabellen og får den til å ta opp hele høyden og bredden:
+        self.tabell_visning_ramme.grid_rowconfigure(0, weight=0)                # Låser ramme_meny
+        self.tabell_visning_ramme.grid_rowconfigure(1, weight=1)                # Fleksibel høyde for tabellen
+        self.tabell_visning_ramme.grid_columnconfigure(0, weight=1)             # Fleksibel bredde for tabellen
+
+    def _opprett_meny_topp(self):
+        """Intern funksjon for å opprette topp meny."""
         self.meny_ramme = customtkinter.CTkFrame(
-            master=tabell_visning_ramme, 
+            master=self.tabell_visning_ramme, 
         ) 
         self.meny_ramme.grid(row=0, column=0, sticky="new", padx=10, pady=10)   # Plassering av ramme
         self.meny_ramme.grid_columnconfigure(0, weight=0)                       # Søkefeltet
@@ -62,28 +112,18 @@ class TabellModul:
             command=lambda: self.let_i_data(leteord.get()), 
         )
         knapp_søk.grid(row=0, column=1, sticky="nw", padx=10, pady=10)          # Plassering av søkeknapp
-        # Øvre meny, Opprett ny kunde: TEST # TODO: Fullfør denne
-        if self.vis_detalj_tekst :
-            self.vis_detalj_knapp = customtkinter.CTkButton(
-                master=self.meny_ramme, 
-                text=self.vis_detalj_tekst,
-                command=self.vis_detaljer,
-                width=30,
-            )
-            self.vis_detalj_knapp.grid(row=0, column=3, sticky="ne", padx=10, pady=10)# Plassering av knapp for å opprette ny kunde
 
-        
-        # Tabell ramme, Oppsett:
+        self.knapp_detaljer_opprett(self.meny_ramme)                            # Oppretter detaljknappen i menyen basert på evt subclass
+
+
+    def _opprett_tabell(self):
+        """Intern funksjon for å opprette tabellen."""
         tabell_ramme = customtkinter.CTkFrame(
-            master=tabell_visning_ramme, 
+            master=self.tabell_visning_ramme, 
             corner_radius=5
             )
         tabell_ramme.grid(row=1, column=0, sticky="nsew", padx=10, pady=10)
 
-        # Setter opp grid for tabellen og får den til å ta opp hele høyden og bredden:
-        tabell_visning_ramme.grid_rowconfigure(0, weight=0)                     # Låser ramme_meny
-        tabell_visning_ramme.grid_rowconfigure(1, weight=1)                     # Fleksibel høyde for tabellen
-        tabell_visning_ramme.grid_columnconfigure(0, weight=1)                  # Fleksibel bredde for tabellen
         # Setter opp grid for tabellen og får den til å ta opp hele høyden og bredden:
         tabell_ramme.grid_rowconfigure(0, weight=1)
         tabell_ramme.grid_columnconfigure(0, weight=1)
@@ -94,40 +134,36 @@ class TabellModul:
         stil.configure("Treeview", font=("Roboto", 12), background="white", foreground="black", highlightthickness=1, bordercolor="grey")
         stil.configure("Treeview.Heading", font=("Roboto", 14, "bold"), background="white", foreground="black")
         # Setter opp kolonnene i tabellen:
-        self.tree = ttk.Treeview(master=tabell_ramme, columns=self.kolonner, show="headings", height="100")
-        self.tree.grid(row=0, column=0, sticky="new", padx=10, pady=10)
-        self.tree.bind(
+        self.tabell = ttk.Treeview(master=tabell_ramme, columns=self.kolonner, show="headings", height="100")
+        self.tabell.grid(row=0, column=0, sticky="new", padx=10, pady=10)
+        self.tabell.bind(
             "<Double-1>",                                                       # Binder dobbeltklikk
             lambda event: self.vis_detaljer(                                    # Bruker en lambda funksjon som peker til funksjon
-                self.tree.item(self.tree.focus())['values']                     # Sende verdiene til valgt rad som argument
+                self.tabell.item(self.tabell.focus())['values']                     # Sende verdiene til valgt rad som argument
             )
-        )                                                                       # Binder vis detaljer funksjon til dobbelklikk på rader
-        # TODO: Også ha en mulighet for å velge en rad og ha en knapp i meny_ramme som er "Vis detaljer" som blir gyldig ved valg av rad?
-        self.vis_detalj_knapp.configure(state="disabled")                # Deaktiverer detaljknappen til det er valgt en ordrelinje
-        def knapp_oppdater_tilstand(event):
-            print("Oppdaterer knapp tilstand")
-            if self.tree.selection():
-                print("Valgt ordrelinje")
-                self.vis_detalj_knapp.configure(state="normal") # Aktiverer detaljknappen hvis det er valgt en ordrelinje
-            else:
-                print("Ingen ordrelinje valgt")
-                self.vis_detalj_knapp.configure(state="disabled")
-        self.tree.bind("<<TreeviewSelect>>", knapp_oppdater_tilstand)
-
+        )       
         
+        if self.knapp_detaljer_betinget and self.knapp_detaljer != None:        # Sjekker om detaljknappen er opprettet og at den er betinget
+            self.knapp_detaljer.configure(state="disabled")
+            self.tabell.bind(
+                "<<TreeviewSelect>>",                                           # Binder valg av rad i tabellen til funksjon for oppdatering av knapp
+                lambda event: self.knapp_oppdater_tilstand(self.knapp_detaljer) # Sender verdiene til knapp som argument
+            )
 
         # Setter opp kolonneoverskriftene:
         for kolonne in self.kolonner:
-            self.tree.heading(kolonne, text=kolonne)
-            self.tree.column(kolonne, anchor="center", width=100)
+            self.tabell.heading(kolonne, text=kolonne)
+            self.tabell.column(kolonne, anchor="center", width=100)
         # Setter opp scrollbar:
-        scrollbar = ttk.Scrollbar(master=tabell_ramme, orient="vertical", command=self.tree.yview)
-        self.tree.configure(yscroll=scrollbar.set)
+        scrollbar = ttk.Scrollbar(master=tabell_ramme, orient="vertical", command=self.tabell.yview)
+        self.tabell.configure(yscroll=scrollbar.set)
         scrollbar.grid(row=0, column=1, sticky="ns")
 
+    def _opprett_meny_bunn(self):
+        """Intern funksjon for å opprette bunn meny."""
         # Bunn meny, oppsett:
         navigasjon_ramme = customtkinter.CTkFrame(
-            master=tabell_visning_ramme, 
+            master=self.tabell_visning_ramme, 
             corner_radius=5
         )
         # Valg av antall rader : Her skal vi sende antall viste sider til oppdater_tabell funksjonen.
@@ -163,8 +199,6 @@ class TabellModul:
             command=lambda: self.endre_side(1),
             width=30,
         )
-        self.oppdater_tabell()                                                  # Kaller oppdater_tabell for å vise første side av dataene i tabellen
-        # Plassering av komponenter:
         navigasjon_ramme.grid(row=2, column=0, sticky="sew", padx=10, pady=10)
         knapp_antall_tekst.grid(row=0, column=0, sticky="nw", padx=10, pady=10)
         knapp_antall.grid(row=0, column=1, sticky="nw", padx=10, pady=10)
@@ -172,11 +206,7 @@ class TabellModul:
         self.side_indikator.grid(row=0, column=3, sticky="ew", padx=10, pady=10)
         knapp_nav_frem.grid(row=0, column=4, sticky="w", padx=10, pady=10)
 
-        self.ekstra_funksjoner()                                                # Kaller ekstra funksjoner for spesifikasjoner i SubClass
 
-    def ekstra_funksjoner(self):
-        """Ekstra funksjoner for SubClass. Denne funksjonen må implementeres i SubClass."""
-        pass    
     def hent_data(self):
         """Henter data fra databasen. Denne funksjonen må implementeres i SubClass."""
         raise NotImplementedError("Denne funksjonen må implementeres i SubClass.")
@@ -212,8 +242,8 @@ class TabellModul:
                 self.aktuell_side = 1   
 
         # Slette eksisterende rader i tabellen:
-        for rad in self.tree.get_children():
-            self.tree.delete(rad)
+        for rad in self.tabell.get_children():
+            self.tabell.delete(rad)
 
         # Legger til nye rader i tabellen:
         # Beregning av hvilke rader som skal vises basert på aktuell side og antall viste rader:
@@ -224,7 +254,7 @@ class TabellModul:
              )                                                                  # Beregner fra hvilken rad vi skal begynne å vise dataene
         til =  fra + int(self.knapp_antall_var.get())                           # Beregner til hvilken rad vi skal slutte å vise dataene
         for rad in self.vist_data[fra:til]:                                     # Går gjennom dataene tilgjengelig, begrenset til sidevisning
-            self.tree.insert("", "end", values=rad)                             # Legger de inn i tree
+            self.tabell.insert("", "end", values=rad)                             # Legger de inn i tabell
         self.antall_sider = len(self.vist_data) // int(self.knapp_antall_var.get()) + 1     # Beregner antall sider på nytt
         self.side_indikator.configure(text=f"{self.aktuell_side}/{self.antall_sider}")      # Oppdaterer sideindikatoren
 

@@ -139,7 +139,7 @@ class App(customtkinter.CTk):
             widget.destroy()
         # Oppretter ny modul:
         modul = modul_klasse(self.visningsrute)
-        modul.vis()
+        modul.vis_innhold()                                                     # kaller på vis_innhold metoden i modulen for å vise innholdet i visningsruten
 # Starter programmet:
 if __name__ == "__main__":
     App()
