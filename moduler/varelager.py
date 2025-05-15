@@ -23,6 +23,12 @@ class VarelagerModul(TabellModul):
     def vis_detaljer(self, data):
         pass
 
+    def valg_filter_boks(self):
+        """
+        Ikke i bruk her.
+        """
+        pass
+    
     def knapp_detaljer_opprett(self, _master):
         pass                                                                    # Fjerner knappen for detaljer i varelageret, da det ikke er nødvendig å vise detaljer for hver enkelt vare.
 

@@ -5,6 +5,7 @@ Funksjoner for å håndtere data og konverteringer til gjenbruk i andre moduler
 og klasser.
 """
 import customtkinter # Importerer kun for typehinting.
+from CTkMessagebox import CTkMessagebox
 from api.database import tilgjengelige_postnumre
 import re
 
@@ -96,3 +97,24 @@ def validering_navn_sanntid(
         return False
     feilmelding.grid_forget()                                                   # Skjuler feilmelding
     return True
+
+def bruker_varsel(
+        melding: str,
+        icon: str,
+    ) -> CTkMessagebox:
+    """
+    Viser en varselmelding via CTkMessagebox.
+
+    Args:
+        melding (str): Meldingsteksten som skal vises.
+        icon (str): Ikon som skal brukes "ckeck", "error", "warning" eller "info".
+    """
+    if icon not in ["warning", "info", "check"]:                                # Sjekker om ikonet er gyldig
+        raise ValueError("Ikon må være 'warning', 'check' eller 'info'")                 # Hever feil hvis ikonet ikke er gyldig
+    boks = CTkMessagebox(
+        title="Versel",
+        message=melding,
+        icon=icon,
+        option_1="OK",
+    )                                                                           # Viser melding til bruker
+    return boks

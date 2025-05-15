@@ -6,11 +6,16 @@ Legge til og fjerne kunder fra databasen.
 import customtkinter
 from CTkMessagebox import CTkMessagebox
 
-from api.database import hent_kunder, kunde_oppdater, kunde_opprett # Importer funksjoner for å hente kunder og legge til kunder fra databasen
+from api.database import kunder_hent as db_kunder_hent
+from api.database import kunde_oppdater as db_kunde_oppdater
+from api.database import kunde_opprett as db_kunde_opprett # Importer funksjoner for å hente kunder og legge til kunder fra databasen
+from api.database import kunde_slett  as db_kunde_slett                         # Funksjon for å slette kunde, renamet for lettleselighet
+from api.database import kunder_hent_filter as db_kunder_hent_filter             # Importer funksjon for å hente kunder med filter
 from moduler.tabellmodul import TabellModul # Importer TabellModul fra tabellmodul.py
 from moduler.hjelpere import validering_postnr_sanntid                          # Importer valideringsfunksjon for postnummer 
 from moduler.hjelpere import validering_adresse_sanntid                         # Importer valideringsfunksjon for adresse 
 from moduler.hjelpere import validering_navn_sanntid                            # Importer valideringsfunksjon for adresse 
+from moduler.hjelpere import bruker_varsel                                      # Importer bruker varsel for å vise meldinger til bruker
 
 """ Her lager vi en kunde modul som arver fra TabellModul."""
 """
@@ -33,8 +38,10 @@ class KunderModul(TabellModul):
             "Etternavn", 
             "Adresse", 
             "Postnummer"
-            ]                                                                   
+            ]
+        self.kundenummer: int | None = None                                      
         self.knapp_detaljer_betinget = False
+        self.filter: bool = False
 
     def knapp_detaljer_opprett(self, _master):
         """
@@ -51,14 +58,33 @@ class KunderModul(TabellModul):
         )
         self.knapp_detaljer.grid(row=0, column=3, sticky="ne", padx=10, pady=10)
 
-
+    def valg_filter_boks(self):
+        """
+        Funksjon for å filtrere data i tabellen.
+        Denne funksjonen er tom, da vi ikke har noe filter i denne modulen.
+        """
+        self.velg_filter = customtkinter.CTkCheckBox(
+            master=self.meny_ramme,
+            text="Vis kunder uten ordre",
+            command=self.valg_filter_boks_oppdater,
+        )                
+        self.velg_filter.grid(row=0, column=2, sticky="nw", padx=10, pady=10) 
+    
+    def valg_filter_boks_oppdater(self):
+        self.filter = not self.filter
+        if self.filter:
+            self.data = db_kunder_hent_filter()                                        # Henter data fra databasen
+            self.let_i_data(self.leteord.get())                                 # Oppdaterer tabellen med data fra databasen
+        else:
+            self.data = self.hent_data()                                            # Henter data fra databasen
+            self.let_i_data(self.leteord.get())                                 # Oppdaterer tabellen med data fra databasen
 
     def knapp_oppdater_tilstand(self, event):
         pass                                                                    # Fjerner funksjon for å oppdatere tilstand på knappen
 
     def hent_data(self):
         """Henter data fra databasen og returnerer det som en liste."""
-        return hent_kunder()                                                    # Henter kundedata fra databasen
+        return db_kunder_hent()                                                 # Henter kundedata fra databasen
     
     def vis_detaljer(self, kundedata: list=[]):
         """ 
@@ -66,8 +92,7 @@ class KunderModul(TabellModul):
         Den kan valgfritt ta imot kundedata for redigering, eller oppretter kunde uten kundedata
         Den benytter seg av master og bruker detaljvisningrammen som er opprettet i TabellModul. 
         """
-        # her kan vi sjekke om len på kundedata != 0 , så kan vi evt hente ut data....
-        self.kundenummer = None                                                 # Setter kundenummer til None som standardverdi og global variabel     
+        # her kan vi sjekke om len på kundedata != 0 , så kan vi evt hente ut data.... 
         if len(kundedata) != 0:
             self.kundenummer, fornavn, etternavn, adresse, postnr = kundedata   # Legger dataen til passende variabler
         
@@ -91,7 +116,7 @@ class KunderModul(TabellModul):
         self.lag_tittel(ramme_tittel)                                           # Lager tittel for vindu, med kundedata hvis det er sendt inn.
 
         if self.kundenummer:                                                    # Sjekker om det er sendt inn kundedata.
-            self.lag_slett_kunde(ramme_tittel, self.kundenummer)                # Lager slett kunde knapp hvis det er sendt inn kundedata.
+            self.lag_knapp_slett_kunde(ramme_tittel)                            # Lager slett kunde knapp hvis det er sendt inn kundedata.
 
         # Inputfelt for kunderedigering:
         self.input_fornavn = self.lag_inputfelt(
@@ -137,13 +162,13 @@ class KunderModul(TabellModul):
     def lag_inputfelt(
             self, 
             ramme: customtkinter.CTkFrame, 
-            etikett: str, 
+            etikett_: str, 
             rad: int, 
             validering=None
         ) -> tuple[
             customtkinter.CTkLabel, 
             customtkinter.CTkEntry, 
-            customtkinter.CTkLabel
+            customtkinter.CTkLabel | None
         ]:
         """
         Lager dynamisk inputfelt for opprettelse av kundedata.
@@ -158,7 +183,7 @@ class KunderModul(TabellModul):
         """
         etikett = customtkinter.CTkLabel(                                       # Lager etikett for inputfeltet 
             master=ramme,
-            text=etikett,
+            text=etikett_,
             font=("Roboto", 14),
             anchor="e",
         )
@@ -188,7 +213,7 @@ class KunderModul(TabellModul):
             feilmelding.grid_forget()                                           # Skjuler feilmelding som standard.
         return etikett, inputfelt, feilmelding
     
-    def lag_slett_kunde(self, ramme: customtkinter.CTkFrame, kundenummer: str) -> None:
+    def lag_knapp_slett_kunde(self, ramme: customtkinter.CTkFrame) -> None:
         """
         Lager slett kunde knapp for å slette kunde.
         Argumenter:
@@ -243,11 +268,11 @@ class KunderModul(TabellModul):
         fornavn = self.input_fornavn[1].get()                                   # Henter fornavn fra inputfeltet
         etternavn = self.input_etternavn[1].get()                               # Henter etternavn fra inputfeltet
         adresse = self.input_adresse[1].get()                                   # Henter adresse fra inputfeltet
-        postnr = self.input_postnr[1].get()                                     # Henter postnummer fra inputfeltet
+        postnr = int(self.input_postnr[1].get())                                # Henter postnummer fra inputfeltet
 
         if self.kundenummer:                                                    # Sjekker vi skal oppdatere eller opprette kunde
             try:
-                kunde_oppdater(self.kundenummer, fornavn, etternavn, adresse, postnr)
+                db_kunde_oppdater(self.kundenummer, fornavn, etternavn, adresse, postnr)
                 print(f"Kunde {self.kundenummer} oppdatert med data: {fornavn} {etternavn}, {adresse}, {postnr}") # TODO: Fjernes
                 self.tabell_visning_ramme.lift(self.detalj_visning_ramme)       # Løfter tabellvisningrammen opp så den blir synlig
                 self.detalj_visning_ramme.grid_forget()                         # Skjuler detaljvisningrammen etter lagring av kunde.
@@ -256,7 +281,7 @@ class KunderModul(TabellModul):
                 print("Feil ved oppdatering av kunde")                          # TODO: Legg til feilmelding til bruker.
         else:
             try:    
-                kunde_opprett(fornavn, etternavn, adresse, postnr)
+                db_kunde_opprett(fornavn, etternavn, adresse, postnr)
                 print(f"Opprettet ny kunde med data: {fornavn} {etternavn}, {adresse}, {postnr}") # TODO: Fjernes
                 self.tabell_visning_ramme.lift(self.detalj_visning_ramme)       # Løfter tabellvisningrammen opp så den blir synlig
                 self.detalj_visning_ramme.grid_forget()                         # Skjuler detaljvisningrammen etter lagring av kunde.
@@ -264,26 +289,39 @@ class KunderModul(TabellModul):
             except:
                 print("Feil ved oppretting av kunde")                           # TODO: Legg til feilmelding til bruker.
     
-    def slett_kunde(self) -> None:
-        """
-        Funksjon for å slette kunde i databasen.
-        Henter kundenummer fra inputfeltet og sender det til slett funksjonen.
-        """
-        if self.bekreft() == "Ja":
-            print(f"Sletter kunde {self.kundenummer}")                          # TODO: Fjernes
-        else:
-            print("Sletting av kunde avbrutt")                                  # TODO: Fjernes
-            return False                                                        # Avbryter sletting av kunde hvis bruker trykker nei.
+    def slett_kunde(self) -> bool:
+        """Funksjon for å slette kunde i databasen.
         
-        try:
-            # kunde_oppdater(self.kundenummer, None, None, None, None)          # TODO: Legg til slett funksjon i database.py
-            print(f"Kunde {self.kundenummer} slettet")                          # TODO: Fjernes
+        Bekrefter sletting av kunde til bruker og sletter kunden fra db
+
+        Args:
+            kundenummer (int): Kundenummeret til kunden som skal slettes.
+        Returns:
+            bool: True hvis sletting var vellykket, False hvis sletting ble avbrutt eller feilet.
+        """
+        if self.bekreft() == True:                                              # Bekreftelse på sletting av kunde
+            print(f"Godkjent sletting av kunde {self.kundenummer}")                               # TODO: Fjernes
+        else:
+            return False                                                        # Avbryter sletting av kunde hvis bruker trykker nei.
+        if self.kundenummer == None:                                            # Sjekker om kundenummer er None
+            bruker_varsel("Ingen kunde valgt", "error")                         # Viser varsel til bruker om at ingen kunde er valgt
+            return False         
+        resultat = db_kunde_slett(self.kundenummer)                             # Sletter kunde fra databasen og lagrer resultatet i variabel
+        if  resultat==0:
+            bruker_varsel("Ordre bundet mot kunde, kan ikke slette", "warning") # Viser varsel til bruker om at ingen kunde er valgt
+        if resultat:    
+            bruker_varsel("Kunde er slettet", "check")                          # Sjekker om slettingen var vellykket
+            self.leteord.delete(0, "end")                                       # Fjerner søketeksten
+            self.filter = False
+            self.velg_filter.deselect()                                         
+            self.data = self.hent_data()                                        # Henter data fra databasen på nytt
+            self.let_i_data("")                                                 # Oppdaterer tabellen etter sletting av kunde
             self.tabell_visning_ramme.lift(self.detalj_visning_ramme)           # Løfter tabellvisningrammen opp så den blir synlig
             self.detalj_visning_ramme.grid_forget()                             # Skjuler detaljvisningrammen etter sletting av kunde.
-        except:
-            print("Feil ved sletting av kunde")                                 # TODO: Legg til feilmelding til bruker.
-            return False       
-                                                                                # Avbryter sletting av kunde hvis det oppstår feil.
+        return True
+
+
+
     def bekreft(self) -> bool:
         """
         Bekreftelse på sletting av kunde.
@@ -296,5 +334,6 @@ class KunderModul(TabellModul):
             option_1="Ja",
             option_2="Nei",
         )
-        svar = result.get()
+        svar = True if result.get()=="Ja" else False                            # Setter svar til True hvis bruker trykker ja, ellers False.   
         return svar
+
