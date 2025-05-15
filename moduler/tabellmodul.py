@@ -49,6 +49,13 @@ class TabellModul:
         # )
         # self.knapp_detaljer.grid(row=0, column=3, sticky="ne", padx=10, pady=10)
 
+    def valg_filter_boks(self):
+        """
+        Dette er en tom funksjon som skal overstyres av submoduler.
+        Kopier funksjonen til submodulene, fjern kommentering og tilpass den der.
+        """
+        pass
+
     def knapp_oppdater_tilstand(self, knapp:customtkinter.CTkButton):
         """
         Oppdaterer tilstand til <knapp> basert på valg i tabellen.
@@ -56,12 +63,9 @@ class TabellModul:
         Args: 
             knapp (customtkinter.CTkButton): Knappen som skal oppdateres.
         """
-        print("Oppdaterer knapp tilstand")
         if self.tabell.selection():
-            print("Valgt ordrelinje")
             knapp.configure(state="normal") # Aktiverer detaljknappen hvis det er valgt en ordrelinje
         else:
-            print("Ingen ordrelinje valgt")
             knapp.configure(state="disabled")
 
     def opprett_rammer(self):
@@ -94,7 +98,7 @@ class TabellModul:
         self.meny_ramme.grid_columnconfigure(3, weight=0)                       # Opprett ny kunde
 
         # Øvre meny, Søkefelt:
-        leteord = customtkinter.CTkEntry(
+        self.leteord = customtkinter.CTkEntry(
             master=self.meny_ramme,
             width=300,
             height=30,
@@ -102,17 +106,19 @@ class TabellModul:
             placeholder_text="Søk i tabellen...",
             placeholder_text_color="grey",
         )
-        leteord.grid(row=0, column=0, sticky="nw", padx=10, pady=10)            # Plassering av søkefelt
-        leteord.bind("<KeyRelease>", lambda event: self.let_i_data(leteord.get())) # Binder tastetrykk til søkefunksjonen for live søk
-        leteord.bind("<Return>", lambda event: self.let_i_data(leteord.get()))  # Binder Enter-tasten til søkefunksjonen
+        self.leteord.grid(row=0, column=0, sticky="nw", padx=10, pady=10)            # Plassering av søkefelt
+        self.leteord.bind("<KeyRelease>", lambda event: self.let_i_data(self.leteord.get())) # Binder tastetrykk til søkefunksjonen for live søk
+        self.leteord.bind("<Return>", lambda event: self.let_i_data(self.leteord.get()))  # Binder Enter-tasten til søkefunksjonen
         # Øvre meny, Søkeknapp:
         knapp_søk = customtkinter.CTkButton(
             master=self.meny_ramme,
             text="Søk",
-            command=lambda: self.let_i_data(leteord.get()), 
+            command=lambda: self.let_i_data(self.leteord.get()), 
         )
         knapp_søk.grid(row=0, column=1, sticky="nw", padx=10, pady=10)          # Plassering av søkeknapp
-
+        # Øvre meny, valgri filterboks:
+        self.valg_filter_boks()                                                  # Kaller på funksjon for å opprette filterboks
+        # Øvre meny, valgfri vis detaljer:
         self.knapp_detaljer_opprett(self.meny_ramme)                            # Oppretter detaljknappen i menyen basert på evt subclass
 
 
@@ -134,7 +140,7 @@ class TabellModul:
         stil.configure("Treeview", font=("Roboto", 12), background="white", foreground="black", highlightthickness=1, bordercolor="grey")
         stil.configure("Treeview.Heading", font=("Roboto", 14, "bold"), background="white", foreground="black")
         # Setter opp kolonnene i tabellen:
-        self.tabell = ttk.Treeview(master=tabell_ramme, columns=self.kolonner, show="headings", height="100")
+        self.tabell = ttk.Treeview(master=tabell_ramme, columns=self.kolonner, show="headings", height=100)
         self.tabell.grid(row=0, column=0, sticky="new", padx=10, pady=10)
         self.tabell.bind(
             "<Double-1>",                                                       # Binder dobbeltklikk
@@ -156,7 +162,7 @@ class TabellModul:
             self.tabell.column(kolonne, anchor="center", width=100)
         # Setter opp scrollbar:
         scrollbar = ttk.Scrollbar(master=tabell_ramme, orient="vertical", command=self.tabell.yview)
-        self.tabell.configure(yscroll=scrollbar.set)
+        self.tabell.configure(yscroll=scrollbar.set)                            # type: ignore
         scrollbar.grid(row=0, column=1, sticky="ns")
 
     def _opprett_meny_bunn(self):
@@ -217,9 +223,9 @@ class TabellModul:
         raise NotImplementedError("Denne funksjonen må implementeres i SubClass.")
 
     # Søkefunksjon: 
-    def let_i_data(self, søk):
+    def let_i_data(self, sok: str):
         self.vist_data = [
-            rad for rad in self.data if søk.lower() in str(rad).lower() 
+            rad for rad in self.data if sok.lower() in str(rad).lower() 
         ]
         self.oppdater_tabell()
     
@@ -254,7 +260,7 @@ class TabellModul:
              )                                                                  # Beregner fra hvilken rad vi skal begynne å vise dataene
         til =  fra + int(self.knapp_antall_var.get())                           # Beregner til hvilken rad vi skal slutte å vise dataene
         for rad in self.vist_data[fra:til]:                                     # Går gjennom dataene tilgjengelig, begrenset til sidevisning
-            self.tabell.insert("", "end", values=rad)                             # Legger de inn i tabell
+            self.tabell.insert("", "end", values=rad)                           # Legger de inn i tabell
         self.antall_sider = len(self.vist_data) // int(self.knapp_antall_var.get()) + 1     # Beregner antall sider på nytt
         self.side_indikator.configure(text=f"{self.aktuell_side}/{self.antall_sider}")      # Oppdaterer sideindikatoren
 

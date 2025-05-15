@@ -178,7 +178,7 @@ def hent_varer():
 
 
 # Funksjon for å hente alle kunder.
-def hent_kunder(): #TODO: Korriger denne til å hente en stored procedure i databasen, opprett en stored procedure.
+def kunder_hent(): #TODO: Korriger denne til å hente en stored procedure i databasen, opprett en stored procedure.
     try:
         databasen = tilkobling_database() # Koble til databasen
         spørring = databasen.cursor() # Dette er en virituell "markør"
@@ -188,7 +188,44 @@ def hent_kunder(): #TODO: Korriger denne til å hente en stored procedure i data
     except mysql.connector.Error as err:
         print(f"Feil ved henting av kunder: {err}")
         return []
-    
+
+def kunder_hent_filter():
+    """
+    Funksjon for å hente kunder med filter.
+    Returns:
+        List of customers
+    """
+    try:
+        databasen = tilkobling_database() # Koble til databasen
+        spørring = databasen.cursor() # Dette er en virituell "markør"
+        spørring.execute("SELECT KNr, Fornavn, Etternavn, Adresse, PostNr FROM kunde WHERE NOT EXISTS (SELECT 1 FROM ordre WHERE ordre.KNr = kunde.KNr )") 
+        resultat = spørring.fetchall() # Lagrer resultat fra spørring
+        return resultat # Returnerer resultatet
+    except mysql.connector.Error as err:
+        print(f"Feil ved henting av kunder: {err}")
+        return []
+
+# Funksjon for å slette spesifikk kunde:
+def kunde_slett(kunde_id: int)-> int:
+    if kunde_id != None:
+        try:
+            databasen = tilkobling_database()                                   # Koble til databasen
+            spørring = databasen.cursor()                                       # Dette er en virituell "markør"
+            spørring.execute(f"DELETE FROM kunde WHERE kunde.KNr = {kunde_id}") # TODO: Stored procedure i stedet for spørring
+            databasen.commit()                                                  # Utfører handling
+        except:
+            return 0   
+                                                                    # Returnerer 0 hvis sletting mislyktes
+        finally:
+            if databasen:
+                databasen.close()
+            if spørring:
+                spørring.close()
+        return kunde_id
+    else:
+        return 0
+
+
 #Funksjon for å hente spesifikk kundeinfo:
 def hent_spesifikk_kunde(kunde_id):
     if(kunde_id != None):
@@ -297,7 +334,7 @@ def kunde_opprett(
         etternavn: str, 
         adresse: str,   
         postnr: int    
-)->bool:
+    )->bool:
     """
     Funksjon for å legge til en kunde i databasen. 
     Args:

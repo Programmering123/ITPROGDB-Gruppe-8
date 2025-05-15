@@ -29,7 +29,12 @@ class OrdrerModul(TabellModul):
     def hent_data(self):
         return hent_ordrer()                                                    # Overstyrer hent_data() fra TabellModul for å hente ordrer fra databasen
     
-    
+    def valg_filter_boks(self):
+        """
+        Ikke i bruk her.
+        """
+        pass
+
     def knapp_detaljer_opprett(self, ramme:customtkinter.CTkFrame)->None:
         """
         Opprettelse av detaljer funksjon, denne kontrolleres av mesterklasse.
