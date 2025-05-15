@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_hent_alle_varer`()
+CREATE DEFINER=`root`@`localhost` PROCEDURE `hent_alle_varer`()
 BEGIN
     SELECT 
       VNr,

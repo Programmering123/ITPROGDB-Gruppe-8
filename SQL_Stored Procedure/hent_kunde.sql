@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_hent_kunde`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `hent_kunde`(
     IN in_KNr INT
 )
 BEGIN

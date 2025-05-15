@@ -1,8 +1,5 @@
-DELIMITER $$
-
-CREATE FUNCTION fn_ordretotal(in_ordreNr INT)
-  RETURNS DECIMAL(12,2)
-  DETERMINISTIC
+CREATE DEFINER=`root`@`localhost` FUNCTION `fn_ordretotal`(in_ordreNr INT) RETURNS decimal(12,2)
+    DETERMINISTIC
 BEGIN
   DECLARE v_total DECIMAL(12,2);
 
@@ -12,6 +9,4 @@ BEGIN
   WHERE OrdreNr = in_ordreNr;
 
   RETURN v_total;
-END$$
-
-DELIMITER ;
+END

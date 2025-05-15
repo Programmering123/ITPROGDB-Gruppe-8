@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_opprett_ordre`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `opprett_ordre`(
     IN  in_KNr       INT,
     IN  in_ordreDato DATE,
     OUT out_ordreNr  INT

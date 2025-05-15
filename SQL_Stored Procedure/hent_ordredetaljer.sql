@@ -1,4 +1,4 @@
-CREATE DEFINER=`root`@`localhost` PROCEDURE `sp_hent_ordredetaljer`(
+CREATE DEFINER=`root`@`localhost` PROCEDURE `hent_ordredetaljer`(
     IN in_ordreNr INT
 )
 BEGIN

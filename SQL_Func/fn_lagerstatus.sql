@@ -1,8 +1,5 @@
-DELIMITER $$
-
-CREATE FUNCTION fn_lagerstatus(in_VNr CHAR(5))
-  RETURNS VARCHAR(10)
-  DETERMINISTIC
+CREATE DEFINER=`root`@`localhost` FUNCTION `fn_lagerstatus`(in_VNr CHAR(5)) RETURNS varchar(10) CHARSET utf8mb4
+    DETERMINISTIC
 BEGIN
   DECLARE v_ant INT;
   DECLARE v_status VARCHAR(10);
@@ -20,6 +17,4 @@ BEGIN
   END IF;
 
   RETURN v_status;
-END$$
-
-DELIMITER ;
+END

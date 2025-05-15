@@ -1,8 +1,5 @@
-DELIMITER $$
-
-CREATE FUNCTION fn_antall_linjer(in_ordreNr INT)
-  RETURNS INT
-  DETERMINISTIC
+CREATE DEFINER=`root`@`localhost` FUNCTION `fn_antall_linjer`(in_ordreNr INT) RETURNS int
+    DETERMINISTIC
 BEGIN
   DECLARE v_count INT;
 
@@ -12,6 +9,4 @@ BEGIN
   WHERE OrdreNr = in_ordreNr;
 
   RETURN v_count;
-END$$
-
-DELIMITER ;
+END
