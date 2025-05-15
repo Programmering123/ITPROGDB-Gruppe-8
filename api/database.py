@@ -214,8 +214,7 @@ def kunde_slett(kunde_id: int)-> int:
             spørring.execute(f"DELETE FROM kunde WHERE kunde.KNr = {kunde_id}") # TODO: Stored procedure i stedet for spørring
             databasen.commit()                                                  # Utfører handling
         except:
-            return 0   
-                                                                    # Returnerer 0 hvis sletting mislyktes
+            return 0                                                            # Returnerer 0 hvis sletting mislyktes
         finally:
             if databasen:
                 databasen.close()
@@ -368,5 +367,54 @@ def kunde_opprett(
     else:
         raise ValueError("Angitt data er ugyldig")
 
+## Generer faktura database:
+def lagre_faktura(
+        faktura_navn: str,
+        forfall_dato: str,
+        faktura_dato: str,
+        ordre_nr: int
+    ) -> bool:
+    """
+    Funksjon for å lagre faktura i databasen.
+    Args:
+        faktura_nr: Fakturanummer
+        faktura_navn: Navn på faktura
+        forfall_dato: Forfallsdato
+        faktura_dato: Fakturadato
+        ordre_nr: Ordrenummer
+    Returns:
+        True hvis vellykket, False ellers.
+    """
+    try:
+        databasen = tilkobling_database()
+        spørring = databasen.cursor()
+        spørring.execute("INSERT INTO varehusdb.faktura ( FakturaNavn, ForfallDato, FakturaDato, OrdreNr) VALUES ( %s, %s, %s, %s)", (faktura_navn, forfall_dato, faktura_dato, ordre_nr))
+        databasen.commit()
+        return True
+    except mysql.connector.Error as err:
+        print(f"Feil ved lagring av faktura: {err}")
+        return False
+    finally:
+        if databasen:
+            databasen.close()
+
+
+
 # Referanse: https://www.w3schools.com/python/python_mysql_select.asp
 # print(mydb)
+
+"""
+CREATE TABLE `varehusdb`.`faktura` (
+  `FakturaNR` INT NOT NULL,
+  `FakturaNavn` VARCHAR(45) NULL,
+  `ForfallDato` DATE NULL,
+  `FakturaDato` DATE NULL,
+  `OrdreNr` INT NOT NULL,
+  PRIMARY KEY (`FakturaNR`),
+  INDEX `FK_OrdreFaktura_idx` (`OrdreNr` ASC) VISIBLE,
+  UNIQUE INDEX `FakturaNR_UNIQUE` (`FakturaNR` ASC) VISIBLE,
+  CONSTRAINT `FK_OrdreFaktura`
+    FOREIGN KEY (`OrdreNr`)
+    REFERENCES `varehusdb`.`ordre` (`OrdreNr`)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION);"""

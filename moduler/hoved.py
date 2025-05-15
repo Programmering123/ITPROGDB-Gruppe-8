@@ -5,8 +5,6 @@ from PIL import Image
 class Hovedvindu:
     def __init__(self, master):
         self.master = master
-        # self.grid_rowconfigure(0, weight=1)  # Setter opp grid for hovedvinduet og får det til å ta opp hele høyden:
-        # self.grid_columnconfigure(0, weight=1)  # Setter opp grid for hovedvinduet og får det til å ta opp hele bredden:
         self.visningsrute = None  # Initialiserer visningsruten
 
     def vis_innhold(self):

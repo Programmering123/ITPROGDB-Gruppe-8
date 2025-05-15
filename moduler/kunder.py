@@ -11,7 +11,7 @@ from api.database import kunde_oppdater as db_kunde_oppdater
 from api.database import kunde_opprett as db_kunde_opprett # Importer funksjoner for å hente kunder og legge til kunder fra databasen
 from api.database import kunde_slett  as db_kunde_slett                         # Funksjon for å slette kunde, renamet for lettleselighet
 from api.database import kunder_hent_filter as db_kunder_hent_filter             # Importer funksjon for å hente kunder med filter
-from moduler.tabellmodul import TabellModul # Importer TabellModul fra tabellmodul.py
+from moduler.tabell import Tabell # Importer TabellModul fra tabellmodul.py
 from moduler.hjelpere import validering_postnr_sanntid                          # Importer valideringsfunksjon for postnummer 
 from moduler.hjelpere import validering_adresse_sanntid                         # Importer valideringsfunksjon for adresse 
 from moduler.hjelpere import validering_navn_sanntid                            # Importer valideringsfunksjon for adresse 
@@ -24,7 +24,7 @@ Den skal også gi mulighet for å opprette ny kunde
 Ved dobbeltklikk på dataliste så skal den åpne funksjonen vis_detaljer
 Hvor den skal gi mulighet til å behandle datalinje.
 """
-class KunderModul(TabellModul):
+class Kunder(Tabell):
     """
     KunderModul er en klasse som arver fra TabellModul.
     Den viser informasjon om alle kunder i databasen og gir mulighet for å opprette og redigere kunder.

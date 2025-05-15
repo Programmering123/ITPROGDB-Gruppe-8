@@ -2,11 +2,10 @@
 # Oppgaveteksten:
 # Vise en liste over hvilke varer som er på varelageret, inkludert varenummer, navn på varen, antall og pris.  
 # I tillegg til å vise varelageret i selv Python programmet skal dere ved bruk av en API vise varelageret i en nettleser.
-import customtkinter
 from api.database import hent_varelager
-from moduler.tabellmodul import TabellModul # Importer TabellModul fra tabellmodul.py
+from moduler.tabell import Tabell # Importer TabellModul fra tabellmodul.py
 
-class VarelagerModul(TabellModul):
+class Varelager(Tabell):
     def __init__(self, master):
         super().__init__(master)
         # Spørring: KNr, Fornavn, Etternavn, Addresse, PostNr
@@ -23,16 +22,9 @@ class VarelagerModul(TabellModul):
     def vis_detaljer(self, data):
         pass
 
-    def valg_filter_boks(self):
-        """
-        Ikke i bruk her.
-        """
-        pass
-    
+    def valg_filter_boks(self):                                                 
+        pass                                                                    # Ikke i bruk i denne modulen. 
+
     def knapp_detaljer_opprett(self, _master):
         pass                                                                    # Fjerner knappen for detaljer i varelageret, da det ikke er nødvendig å vise detaljer for hver enkelt vare.
 
-    def opprett_knapp_detaljer(self, _master):
-        pass                                                                    # Fjerner knappen for detaljer i varelageret, da det ikke er nødvendig å vise detaljer for hver enkelt vare.
-    def bind_tabell_valg(self):
-        pass

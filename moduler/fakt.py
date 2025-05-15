@@ -2,6 +2,8 @@ import os
 import datetime
 from datetime import datetime, timedelta
 from fpdf import FPDF
+from moduler.hjelpere import bruker_varsel
+from api.database import lagre_faktura
 
 def generer_unikt_fakturanummer(ordrenummer: str, dato: str) -> str:
     """Genererer et unikt fakturanummer basert på dato og tid."""
@@ -205,6 +207,12 @@ def lag_faktura(
 
 
     pdf.output(filsti)
+    if lagre_faktura(fakturanummer, forfallsdato, fakturadato, ordrenummer):
+        bruker_varsel(
+            melding="Faktura er lagret i databasen.",
+            icon="check"
+        )
+
     print (ordrelinjer)
   
 

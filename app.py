@@ -3,9 +3,9 @@ import customtkinter
 from PIL import Image
 
 from moduler.hoved import Hovedvindu
-from moduler.ordrer import OrdrerModul
-from moduler.varelager import VarelagerModul
-from moduler.kunder import KunderModul
+from moduler.ordrer import Ordrer
+from moduler.varelager import Varelager
+from moduler.kunder import Kunder
 
 class App(customtkinter.CTk):
     def __init__(self):
@@ -60,19 +60,19 @@ class App(customtkinter.CTk):
         self.knapp = customtkinter.CTkButton(
             master=self.meny,
             text="Ordrer",
-            command=lambda: self.vis_modul(OrdrerModul)
+            command=lambda: self.vis_modul(Ordrer)
         )
         self.knapp.grid(row=1, column=0, sticky="n", padx=10, pady=3)
         self.knapp2 = customtkinter.CTkButton(
             master=self.meny,
             text="Varelager",
-            command=lambda: self.vis_modul(VarelagerModul)
+            command=lambda: self.vis_modul(Varelager)
         )
         self.knapp2.grid(row=2, column=0, sticky="n", padx=10, pady=3)
         self.knapp3 = customtkinter.CTkButton(
             master=self.meny,
             text="Kunder",
-            command=lambda: self.vis_modul(KunderModul)
+            command=lambda: self.vis_modul(Kunder)
         )
         self.knapp3.grid(row=3, column=0, sticky="n", padx=10, pady=3)
 
