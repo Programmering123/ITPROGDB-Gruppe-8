@@ -1,7 +1,7 @@
 import customtkinter
 from tkinter import ttk
 
-class TabellModul:
+class Tabell:
     def __init__(self, master):
         self.master = master
         self.aktuell_side = 1

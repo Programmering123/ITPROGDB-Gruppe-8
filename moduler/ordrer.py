@@ -5,10 +5,10 @@
 import customtkinter
 from tkinter import ttk
 from api.database import hent_ordrer, hent_spesifikk_ordre, hent_spesifikk_kunde, hent_ordrelinjer
-from moduler.tabellmodul import TabellModul # Importer TabellModul fra tabellmodul.py
-from moduler.fakt import lag_faktura, generer_unikt_fakturanummer # Importer lag_faktura fra fakt.py
+from moduler.tabell import Tabell                                               # Importer TabellModul fra tabell.py
+from moduler.fakt import lag_faktura, generer_unikt_fakturanummer               # Importer lag_faktura fra fakt.py
 
-class OrdrerModul(TabellModul):
+class Ordrer(Tabell):
     def __init__(self, master):
         super().__init__(master)
         # Spørring: KNr, Fornavn, Etternavn, Addresse, PostNr
