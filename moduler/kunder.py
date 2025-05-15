@@ -4,6 +4,7 @@ Vise alle kunder som er registrert i databasen. OBS! Her skal dere bruke «Store
 Legge til og fjerne kunder fra databasen.  
 """
 import customtkinter
+from CTkMessagebox import CTkMessagebox
 
 from api.database import hent_kunder, kunde_oppdater, kunde_opprett # Importer funksjoner for å hente kunder og legge til kunder fra databasen
 from moduler.tabellmodul import TabellModul # Importer TabellModul fra tabellmodul.py
@@ -89,6 +90,9 @@ class KunderModul(TabellModul):
         # Tittel for vindu:
         self.lag_tittel(ramme_tittel)                                           # Lager tittel for vindu, med kundedata hvis det er sendt inn.
 
+        if self.kundenummer:                                                    # Sjekker om det er sendt inn kundedata.
+            self.lag_slett_kunde(ramme_tittel, self.kundenummer)                # Lager slett kunde knapp hvis det er sendt inn kundedata.
+
         # Inputfelt for kunderedigering:
         self.input_fornavn = self.lag_inputfelt(
             ramme_hoved, "Fornavn:", 0, validering_navn_sanntid
@@ -107,7 +111,7 @@ class KunderModul(TabellModul):
         self.lag_knapp_lagre(ramme_hoved)
         
         # innsetting av verdier, i forbindelse med redigering av kunde:
-        if self.kundenummer:                                                   # Dette skal kun gjøres hvis det er sendt kundedata.
+        if self.kundenummer:                                                    # Dette skal kun gjøres hvis det er sendt kundedata.
             self.input_fornavn[1].insert(0, fornavn)
             self.input_etternavn[1].insert(0, etternavn)
             self.input_adresse[1].insert(0, adresse)
@@ -183,6 +187,20 @@ class KunderModul(TabellModul):
             )
             feilmelding.grid_forget()                                           # Skjuler feilmelding som standard.
         return etikett, inputfelt, feilmelding
+    
+    def lag_slett_kunde(self, ramme: customtkinter.CTkFrame, kundenummer: str) -> None:
+        """
+        Lager slett kunde knapp for å slette kunde.
+        Argumenter:
+            ramme (customtkinter.CTkFrame): Rammen der knappen skal plasseres.
+        """
+        knapp_slett = customtkinter.CTkButton(
+            master=ramme,
+            text="Slett kunde",
+            command=self.slett_kunde,
+            width=140,
+        )
+        knapp_slett.grid(row=0, column=1, sticky="ne", padx=10, pady=10)
 
     def vis_detalj_ramme(self) -> bool:
         if self.detalj_visning_ramme:                                           # Sjekker om detaljvisningrammen er opprettet. # TODO: Har ingen else... trenger vi den?
@@ -245,3 +263,38 @@ class KunderModul(TabellModul):
                 # TODO: Legg til oppatering av tabellen her.
             except:
                 print("Feil ved oppretting av kunde")                           # TODO: Legg til feilmelding til bruker.
+    
+    def slett_kunde(self) -> None:
+        """
+        Funksjon for å slette kunde i databasen.
+        Henter kundenummer fra inputfeltet og sender det til slett funksjonen.
+        """
+        if self.bekreft() == "Ja":
+            print(f"Sletter kunde {self.kundenummer}")                          # TODO: Fjernes
+        else:
+            print("Sletting av kunde avbrutt")                                  # TODO: Fjernes
+            return False                                                        # Avbryter sletting av kunde hvis bruker trykker nei.
+        
+        try:
+            # kunde_oppdater(self.kundenummer, None, None, None, None)          # TODO: Legg til slett funksjon i database.py
+            print(f"Kunde {self.kundenummer} slettet")                          # TODO: Fjernes
+            self.tabell_visning_ramme.lift(self.detalj_visning_ramme)           # Løfter tabellvisningrammen opp så den blir synlig
+            self.detalj_visning_ramme.grid_forget()                             # Skjuler detaljvisningrammen etter sletting av kunde.
+        except:
+            print("Feil ved sletting av kunde")                                 # TODO: Legg til feilmelding til bruker.
+            return False       
+                                                                                # Avbryter sletting av kunde hvis det oppstår feil.
+    def bekreft(self) -> bool:
+        """
+        Bekreftelse på sletting av kunde.
+        Spør bruker om de er sikker på at de vil slette kunden.
+        """
+        result = CTkMessagebox(
+            title="Bekreft sletting",
+            message="Er du sikker på at du vil slette kunden?",
+            icon="warning",
+            option_1="Ja",
+            option_2="Nei",
+        )
+        svar = result.get()
+        return svar

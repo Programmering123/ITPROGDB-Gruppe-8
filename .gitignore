@@ -6,3 +6,4 @@ env/
 *.env
 .venv/
 www/node_modules/
+fakturaer/

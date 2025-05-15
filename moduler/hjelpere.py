@@ -85,12 +85,12 @@ def validering_navn_sanntid(
     if navn == "":
         feilmelding.grid_forget()                                               # Skjuler feilmelding
         return True    
-    if not (len(navn) <= 30):                                                  # Sjekker lengden på navnet   
+    if not (len(navn) <= 30):                                                   # Sjekker lengden på navnet   
         feilmelding.configure(text = "Maks 30 tegn")                            # Feilmelding til bruker
         feilmelding.grid(row=rad, column=2, sticky="nsew", padx=10, pady=10)    # Viser feilmelding
         return False
-    tillatt_regex = r"^[a-zA-ZæøåÆØÅ\s.,-]+$"                                  # Regex for tillatte karakterer
-    if not re.match(tillatt_regex, navn):                                      # Sjekker om navnet inneholder tillatte karakterer 
+    tillatt_regex = r"^[a-zA-ZæøåÆØÅ\s.,-]+$"                                   # Regex for tillatte karakterer
+    if not re.match(tillatt_regex, navn):                                       # Sjekker om navnet inneholder tillatte karakterer 
         feilmelding.configure(text = "Kun bokstaver")                           # Feilmelding til bruker
         feilmelding.grid(row=rad, column=2, sticky="nsew", padx=10, pady=10)    # Viser feilmelding
         return False

@@ -96,6 +96,8 @@ def hent_varelager():
     except mysql.connector.Error as err:
         print(f"Feil ved henting av varelager: {err}")
         return []
+
+# Funksjon for å hentet varer til API-en, som er en liste med dictionaries.
 def hent_varer():
     databasen = None
     spørring = None
@@ -174,17 +176,6 @@ def hent_varer():
             except Exception as e_db:
                 print(f"Feil ved lukking av database: {e_db}")
 
-# def hent_varer():
-#     try:
-#         databasen = tilkobling_database() # Koble til databasen
-#         spørring = databasen.cursor() # Dette er en virituell "markør"
-#         spørring.execute("SELECT VNr, Betegnelse, Antall, Pris FROM vare LIMIT 1000") # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
-#         resultat = spørring.fetchall() # Lagrer resultat fra spørring
-#         resultat = [dict(zip(["VNr", "Betegnelse", "Antall", "Pris"], rad)) for rad in resultat]
-#         return resultat # Returnerer resultatet
-#     except mysql.connector.Error as err:
-#         print(f"Feil ved henting av varer: {err}")
-#         return []
 
 # Funksjon for å hente alle kunder.
 def hent_kunder(): #TODO: Korriger denne til å hente en stored procedure i databasen, opprett en stored procedure.

@@ -296,29 +296,32 @@ class OrdrerModul(TabellModul):
         vedlegg = "Ingen"
 
         # Generer faktura
-        lag_faktura(
-            kunde=kunde,
-            adresse=adresse,
-            postnummer=postnummer,
-            poststed=poststed,
-            dato=dato,
-            belop=belop,
-            mva=mva,
-            total=total,
-            betalingsbetingelser=betalingsbetingelser,
-            fakturanummer=fakturanummer,
-            ordrenummer=ordrenummer,
-            kundenummer=kundenummer,
-            var_referanse=var_referanse,
-            deres_referanse=deres_referanse,
-            betalingsinformasjon=betalingsinformasjon,
-            ordrelinjer=ordrelinjer,
-            kommentar=kommentar,
-            vedlegg=vedlegg,
-            unikt_nummer=fakturanummer,
-            filnavn=f"{fakturanummer}.pdf",
-            )
-        print(f"Faktura generert:{fakturanummer}.pdf")
+        try:
+            lag_faktura(
+                kunde=kunde,
+                adresse=adresse,
+                postnummer=postnummer,
+                poststed=poststed,
+                dato=dato,
+                belop=belop,
+                mva=mva,
+                total=total,
+                betalingsbetingelser=betalingsbetingelser,
+                fakturanummer=fakturanummer,
+                ordrenummer=ordrenummer,
+                kundenummer=kundenummer,
+                var_referanse=var_referanse,
+                deres_referanse=deres_referanse,
+                betalingsinformasjon=betalingsinformasjon,
+                ordrelinjer=ordrelinjer,
+                kommentar=kommentar,
+                vedlegg=vedlegg,
+                unikt_nummer=fakturanummer,
+                filnavn=f"{fakturanummer}.pdf",
+                )
+            print(f"Faktura generert:{fakturanummer}.pdf")
+        except Exception as e:
+            print(f"Feil ved generering av faktura: {e}")
 
     def lukk_detaljer(self):
         if self.detalj_visning_ramme:
