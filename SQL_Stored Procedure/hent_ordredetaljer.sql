@@ -1,5 +1,5 @@
 CREATE DEFINER=`root`@`localhost` PROCEDURE `hent_ordredetaljer`(
-    IN in_ordreNr INT
+    IN in_ordreNr INT                #Returnerer alle detaljer om en spesifikk ordre: produkter, priser, mengder, og totalpris pr. linje.
 )
 BEGIN
     SELECT 

@@ -8,3 +8,5 @@ BEGIN
       Hylle
     FROM vare;
 END
+
+#Enkel SELECT som returnerer alle varer i tabellen vare

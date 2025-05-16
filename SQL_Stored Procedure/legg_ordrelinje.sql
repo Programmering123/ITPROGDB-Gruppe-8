@@ -1,5 +1,5 @@
 CREATE DEFINER=`root`@`localhost` PROCEDURE `legg_ordrelinje`(
-    IN in_ordreNr INT,
+    IN in_ordreNr INT,               #Legger inn en ny ordrelinje, justerer lagerbeholdningen, og logger prisen i prishistorikk.
     IN in_VNr      CHAR(5),
     IN in_antall   INT
 )
