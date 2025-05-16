@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 from typing import Dict, Any, Optional, Union
 import decimal
-
+import logging
 # Henter variabler fra .env filen
 dotenv_path = Path('secrets.env')
 load_dotenv(dotenv_path=dotenv_path)
@@ -16,9 +16,15 @@ DB_HOST = os.getenv("DB_HOST")
 DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_PORT = os.getenv("DB_PORT")
 
+logging.basicConfig(
+    filename='./logg/log.txt',                                                  # Filnavn for loggfilen
+    level=logging.DEBUG,                                                        # Logg nivå
+    format='%(asctime)s:%(levelname)s:%(message)s'                              # Format for loggmeldinger
+)
+logging.debug("Logger opprettet")                                               # Logger at logger er opprettet
 # Funksjon for å koble til databasen
 def tilkobling_database():
-    return mysql.connector.connect( # Tilkoblingen til databasen
+    return mysql.connector.connect(                                             # Tilkoblingen til databasen
         host=DB_HOST,
         user=DB_USER,
         password=DB_PASSWORD,
@@ -29,32 +35,41 @@ def tilkobling_database():
 # Funksjon for å hentre ordrer: # TODO: Tenker at denne SQLen kan være fin å ha som stored procedure i databasen.
 def hent_ordrer(): 
     try:
+        logging.info("Henter ordrelinjer fra databasen") # Logger at vi henter ordrelinjer
         databasen = tilkobling_database() # Koble til databasen
         spørring = databasen.cursor() # Dette er vel en virituell "markør"
         # Spørringen henter alle rader fra definerte kolonner, og satt LIMIT til 3000 rader, 
         # virker som om dette virker bra og for denne datamengden er det en fin løsning, 
         # ved større datamengder så måtte vi nok begrenset henting.
-        spørring.execute(f"SELECT OrdreNr, Fornavn, OrdreDato, BetaltDato, ordre.KNr FROM ordre INNER JOIN kunde ON ordre.KNr = kunde.KNr LIMIT 0,3000") # Spørringen 
-        resultat = spørring.fetchall() # Lagrer resultat fra spørring
-        return resultat # Returnerer resultatet
+        linje = """SELECT OrdreNr, Fornavn, OrdreDato, BetaltDato, ordre.KNr 
+        FROM ordre INNER JOIN kunde ON ordre.KNr = kunde.KNr LIMIT 0,3000"""    # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
+        spørring.execute(linje)                                                 # Spørringen 
+        resultat = spørring.fetchall()                                          # Lagrer resultat fra spørring
+        return resultat                                                         # Returnerer resultatet
     except mysql.connector.Error as err:
-        print(f"Feil ved henting av ordrelinjer: {err}")
+        logging.error(f"Feil ved henting av ordrelinjer: {err}")
         return []
 # Funksjon for å hente all data fra spesifikk ordre:
 def hent_spesifikk_ordre(ordre_id: int) -> Optional[Dict[str, Any]]:
+    logging.info(f"Henter spesifik ordre med ID: {ordre_id}")                   # Logger at vi henter spesifik ordre
     if(ordre_id != None):
         try:
-            databasen = tilkobling_database() # Koble til databasen
-            spørring = databasen.cursor() # Dette er en virituell "markør"
+            databasen = tilkobling_database() 
+            spørring = databasen.cursor() 
             spørring.execute(f"SELECT OrdreNr, OrdreDato, SendtDato, BetaltDato, KNr FROM ordre WHERE OrdreNr = {ordre_id}") # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
-            resultat = spørring.fetchone() # Lagrer resultat fra spørring
-            if resultat: # Gjør om resultatet til object <3
+            resultat = spørring.fetchone()                                      # Lagrer resultat fra spørring, kun en linje
+            if resultat:                                                        # Gjør om resultatet til object <3
                 kolonner = [beskrivelse[0] for beskrivelse in spørring.description] # Henter kolonnebeskrivelser
-                resultat = dict(zip(kolonner, resultat)) # Lager en dict av resultatet med kolonnenavn som nøkler
-            return resultat # Returnerer resultatet
+                resultat = dict(zip(kolonner, resultat))                        # Lager en dict av resultatet med kolonnenavn som nøkler
+            return resultat                                                     # Returnerer resultatet
         except mysql.connector.Error as err:
-            print(f"Feil ved henting av ordredata: {err}")
+            logging.error(f"Feil ved henting av spesifikke ordrelinjer: {err}")
             return []
+        finally:
+            if databasen:
+                databasen.close()
+            if spørring:
+                spørring.close()
     else:
         print("Ingen ordre valgt.")
         return []
@@ -62,8 +77,8 @@ def hent_spesifikk_ordre(ordre_id: int) -> Optional[Dict[str, Any]]:
 # Funksjon for henting av ordrelinjer:
 def hent_ordrelinjer(ordre_id):
     try:
-        databasen = tilkobling_database() # Koble til databasen
-        spørring = databasen.cursor() # Dette er en virituell "markør"
+        databasen = tilkobling_database()                                       # Koble til databasen
+        spørring = databasen.cursor()                                           # Dette er en virituell "markør"
         spørring.execute(f"SELECT ordrelinje.VNr, Betegnelse, ordrelinje.Antall, PrisPrEnhet FROM varehusdb.ordrelinje INNER JOIN vare ON ordrelinje.VNr = vare.VNr WHERE OrdreNr = {ordre_id} LIMIT 1000;") # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
         resultat = spørring.fetchall() # Lagrer resultat fra spørring
         return resultat # Returnerer resultatet
@@ -77,12 +92,13 @@ def hent_ordrelinjer(ordre_id):
         # return [dict(zip(kolonner, row)) for row in resultat]
 
     except mysql.connector.Error as err:
-        # TODO: Legg til logging av feil her.?
-        print(f"Feil ved henting av ordrelinjer: {err}")
+        logging.error(f"Feil ved henting av ordrelinjer: {err}")
         return []
     finally:
         if databasen:
             databasen.close()
+        if spørring:
+            spørring.close()
 
 # Funksjon for å hente varelageret: (oppgave: Vise en liste over hvilke varer som er på varelageret, inkludert varenummer, navn på varen, antall og pris. )
 # Tilgjengelige kolonner i vare: VNr, Betegnelse, Pris, KatNr, Antall, Hylle 
@@ -94,7 +110,7 @@ def hent_varelager():
         resultat = spørring.fetchall() # Lagrer resultat fra spørring
         return resultat # Returnerer resultatet
     except mysql.connector.Error as err:
-        print(f"Feil ved henting av varelager: {err}")
+        logging.error(f"Feil ved henting av varelager: {err}")  
         return []
 
 # Funksjon for å hentet varer til API-en, som er en liste med dictionaries.
@@ -104,26 +120,19 @@ def hent_varer():
     try:
         databasen = tilkobling_database()
         if not databasen or not databasen.is_connected():
-            print("Feil: Kunne ikke koble til database eller ugyldig forbindelse.")
+            logging.error("Feil: Kunne ikke koble til database eller ugyldig forbindelse.")
             return [] # Returner tom liste hvis ingen gyldig tilkobling
 
         spørring = databasen.cursor()
-        
-        # Sjekk kolonnenavn og tabellnavn mot din faktiske database (varehusdb.sql)
-        # I varehusdb.sql er det VareID, Navn, AntallPåLager, Pris i tabellen Vare
-        # Hvis du bruker VNr etc., må du sørge for at databasen matcher
         sql_query = "SELECT VNr, Betegnelse, Antall, Pris FROM vare LIMIT 1000"
-        # Eller, for å matche varehusdb.sql (anbefalt hvis det er din kilde):
-        # sql_query = "SELECT VareID, Navn, AntallPaLager, Pris FROM Vare LIMIT 1000"
-        # kolonnenavn_for_zip = ["VareID", "Navn", "AntallPaLager", "Pris"]
         kolonnenavn_for_zip = ["VNr", "Betegnelse", "Antall", "Pris"] # Bruker dine opprinnelige navn
         spørring.execute(sql_query)
-        fetched_tuples = spørring.fetchall()
+        hentet_tuples = spørring.fetchall()
         
-        # Din eksisterende linje for å lage en liste av dictionaries
-        resultat_liste_med_dicts = [dict(zip(kolonnenavn_for_zip, rad)) for rad in fetched_tuples]
+        # Lager dict-liste fra tuples, basert på kolonnenavn:
+        resultat_liste_med_dicts = [dict(zip(kolonnenavn_for_zip, rad)) for rad in hentet_tuples]
         
-        # Nå, iterer gjennom listen og konverter Pris og Antall
+        # iterer gjennom listen og konverter Pris og Antall
         for vare_dict in resultat_liste_med_dicts:
             # Konverter Pris
             if 'Pris' in vare_dict and vare_dict['Pris'] is not None:
@@ -133,7 +142,7 @@ def hent_varer():
                     try: # Hvis det allerede er en streng eller et annet tallformat
                         vare_dict['Pris'] = float(vare_dict['Pris'])
                     except (ValueError, TypeError):
-                        print(f"Advarsel: Kunne ikke konvertere Pris '{vare_dict['Pris']}' til float for VNr '{vare_dict.get('VNr')}'. Setter til None.")
+                        logging.warning(f"Advarsel: Kunne ikke konvertere Pris '{vare_dict['Pris']}' til float for VNr '{vare_dict.get('VNr')}'. Setter til None.")
                         vare_dict['Pris'] = None # Eller en annen feilhåndtering
             
             # Sikre at Antall er int (bør være det fra databasen hvis kolonnen er INT)
@@ -144,24 +153,18 @@ def hent_varer():
                     try:
                         vare_dict['Antall'] = int(vare_dict['Antall'])
                     except (ValueError, TypeError):
-                        print(f"Advarsel: Kunne ikke konvertere Antall '{vare_dict['Antall']}' til int for VNr '{vare_dict.get('VNr')}'. Setter til None.")
+                        logging.warning(f"Advarsel: Kunne ikke konvertere Antall '{vare_dict['Antall']}' til int for VNr '{vare_dict.get('VNr')}'. Setter til None.")
                         vare_dict['Antall'] = None # Eller en annen feilhåndtering
         
         return resultat_liste_med_dicts
 
     except mysql.connector.Error as db_err:
+        logging.error(f"Databasefeil ved henting av varer: {db_err}")
         print(f"Databasefeil ved henting av varer: {db_err}")
-        return []
-    except AttributeError as attr_err:
-        # Dette kan skje hvis f.eks. databasen=None og du prøver databasen.cursor()
-        print(f"Attributtfeil i hent_varer (muligens et databaseobjekt er None): {attr_err}")
         return []
     except Exception as e:
         # Fang andre uventede feil
-        print(f"En uventet feil oppstod i hent_varer: {type(e).__name__} - {e}")
-        # For mer detaljert feilsøking, kan du logge hele traceback:
-        # import traceback
-        # print(traceback.format_exc())
+        logging.error(f"Uventet feil ved henting av varer: {type(e).__name__} - {e}")
         return []
     finally:
         # Sørg for å lukke cursor og tilkobling
@@ -169,12 +172,12 @@ def hent_varer():
             try:
                 spørring.close()
             except Exception as e_cursor:
-                print(f"Feil ved lukking av cursor: {e_cursor}")
+                logging.error(f"Feil ved lukking av cursor: {e_cursor}")
         if databasen and databasen.is_connected():
             try:
                 databasen.close()
             except Exception as e_db:
-                print(f"Feil ved lukking av database: {e_db}")
+                logging.error(f"Feil ved lukking av database: {e_db}")
 
 
 # Funksjon for å hente alle kunder.
@@ -399,22 +402,3 @@ def lagre_faktura(
             databasen.close()
 
 
-
-# Referanse: https://www.w3schools.com/python/python_mysql_select.asp
-# print(mydb)
-
-"""
-CREATE TABLE `varehusdb`.`faktura` (
-  `FakturaNR` INT NOT NULL,
-  `FakturaNavn` VARCHAR(45) NULL,
-  `ForfallDato` DATE NULL,
-  `FakturaDato` DATE NULL,
-  `OrdreNr` INT NOT NULL,
-  PRIMARY KEY (`FakturaNR`),
-  INDEX `FK_OrdreFaktura_idx` (`OrdreNr` ASC) VISIBLE,
-  UNIQUE INDEX `FakturaNR_UNIQUE` (`FakturaNR` ASC) VISIBLE,
-  CONSTRAINT `FK_OrdreFaktura`
-    FOREIGN KEY (`OrdreNr`)
-    REFERENCES `varehusdb`.`ordre` (`OrdreNr`)
-    ON DELETE NO ACTION
-    ON UPDATE NO ACTION);"""

@@ -110,7 +110,7 @@ def bruker_varsel(
         icon (str): Ikon som skal brukes "ckeck", "warning" eller "info".
     """
     if icon not in ["warning", "info", "check"]:                                # Sjekker om ikonet er gyldig
-        raise ValueError("Ikon må være 'warning', 'check' eller 'info'")                 # Hever feil hvis ikonet ikke er gyldig
+        raise ValueError("Ikon må være 'warning', 'check' eller 'info'")        # Hever feil hvis ikonet ikke er gyldig
     boks = CTkMessagebox(
         title="Varsel",
         message=melding,

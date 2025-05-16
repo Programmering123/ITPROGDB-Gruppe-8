@@ -64,7 +64,7 @@ class Tabell:
             knapp (customtkinter.CTkButton): Knappen som skal oppdateres.
         """
         if self.tabell.selection():
-            knapp.configure(state="normal") # Aktiverer detaljknappen hvis det er valgt en ordrelinje
+            knapp.configure(state="normal")                                     # Aktiverer detaljknappen hvis det er valgt en ordrelinje
         else:
             knapp.configure(state="disabled")
 
@@ -145,7 +145,7 @@ class Tabell:
         self.tabell.bind(
             "<Double-1>",                                                       # Binder dobbeltklikk
             lambda event: self.vis_detaljer(                                    # Bruker en lambda funksjon som peker til funksjon
-                self.tabell.item(self.tabell.focus())['values']                     # Sende verdiene til valgt rad som argument
+                self.tabell.item(self.tabell.focus())['values']                 # Sende verdiene til valgt rad som argument
             )
         )       
         

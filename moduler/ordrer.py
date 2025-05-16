@@ -1,12 +1,10 @@
-# Oppgavetekst: 
-# Ha funksjonalitet som lister opp alle ordrer som ligger i databasen.   
-# Kunne velge en spesifikk ordre og vise hva slags varer, antall av hver vare som har blitt solgt, 
-# pris pr.vare, pris ganger antall, kunde m/navn og adresse og total pris
 import customtkinter
 from tkinter import ttk
-from api.database import hent_ordrer, hent_spesifikk_ordre, hent_spesifikk_kunde, hent_ordrelinjer
+from api.database import hent_ordrer, hent_spesifikk_ordre, hent_ordrelinjer    # Importerer database funksjoner relatert til ordrer
+from api.database import hent_spesifikk_kunde                                   # Importerer database funksjoner relatert til kunder   
 from moduler.tabell import Tabell                                               # Importer TabellModul fra tabell.py
 from moduler.fakt import lag_faktura, generer_unikt_fakturanummer               # Importer lag_faktura fra fakt.py
+import logging
 
 class Ordrer(Tabell):
     def __init__(self, master):
@@ -18,13 +16,8 @@ class Ordrer(Tabell):
             "Ordre Dato",
             "Betalt Dato",
             "Kunde ID"
-            ] # TODO: Sjekk ut og hent riktig data. Egentlig bare finne ut hva vi trenger å vise av data.
-        self.knapp_detaljer_betinget = True
-        # tabell_visning_ramme = self.tabell_visning_ramme                      # Henter tabellvisningrammen fra TabellModul
-        # self.vis_detalj_knapp()
-    # def vis_innhold(self):
-    #     super().vis_innhold()                                                   # Kaller på vis_innhold() fra TabellModul for å vise innholdet i tabellen
-    
+            ] 
+        self.knapp_detaljer_betinget = True    
 
     def hent_data(self):
         return hent_ordrer()                                                    # Overstyrer hent_data() fra TabellModul for å hente ordrer fra databasen
@@ -60,17 +53,18 @@ class Ordrer(Tabell):
         Args:
             ordre (tuple): Informasjon om valgt ordre fra tabell.
         """
-        
         if ordre != None:
             ordre_id, ordre_kunde_id = ordre[0], ordre[4]                       # Henter ordrenummeret og kundenummeret fra den valgte ordren
             ordredata = hent_spesifikk_ordre(ordre_id)                          # Henter ordredata for den valgte ordren
             ordrelinjer = hent_ordrelinjer(ordre_id)                            # Henter ordrelinjene for den valgte ordren
             kundeinfo = hent_spesifikk_kunde(ordre_kunde_id)                    # Henter kundeinfo for den valgte ordren
         else:
-            return False                                                        # TODO: Feilhåndtering hvis data ikke blir hentet vellykket
+            logging.warning("Vis detaljer, Ingen ordre valgt")                  # Logger advarsel hvis ingen ordre er valgt
+            return False                                                        
 
         if not self.vis_ramme_detalj():                                         # Tegner frem detaljrammen og sjekker om den er synlig
-            return False                                                        # TODO: Feilhåndtering hvis detaljevisningrammen ikke kan vises
+            logging.error("Feil ved visning av detaljvisningrammen")            # Logger feil hvis detaljvisningrammen ikke kan vises
+            return False                                                        
         
         # Header:
         self.opprett_header(ordredata)                                          # Oppretter headeren for detaljvisningrammen     
@@ -219,7 +213,7 @@ class Ordrer(Tabell):
         tabell_ordrelinjer.column("Antall", anchor="w", width=80)
         tabell_ordrelinjer.column("Pris", anchor="w", width=100)
         tabell_ordrelinjer.column("Total", anchor="w", width=120)
-        stil = ttk.Style()                                                      # TODO: kunne tenkt meg at det ikke var border rundt tabell, men bare strek under radene f feks. cleanere look.
+        stil = ttk.Style()                                                      
         stil.configure("Treeview", background="white", foreground="black",
                         highlightthickness=1, bordercolor="grey", border=1)     # Styler cellene
         stil.configure("Treeview.Heading", background="white",
@@ -235,8 +229,8 @@ class Ordrer(Tabell):
                     ordrelinje_betegnelse,
                     ordrelinje_antall,
                     ordrelinje_pris
-                ) = ordrelinje # Setter ordrelinjedata til variabler
-                ordrelinje_total = ordrelinje_antall * ordrelinje_pris # Regner ut totalen for ordrelinjen
+                ) = ordrelinje                                                  # Setter ordrelinjedata til variabler
+                ordrelinje_total = ordrelinje_antall * ordrelinje_pris          # Regner ut totalen for ordrelinjen
                 tabell_ordrelinjer.insert("", "end", values=(
                     ordrelinje_vnr,
                     ordrelinje_betegnelse,
@@ -245,7 +239,13 @@ class Ordrer(Tabell):
                     ordrelinje_total
                 ))
         else:
-            tabell_ordrelinjer.insert("", "end", values=("Ingen ordrelinjer tilgjengelig", "", "", "", "")) # Setter inn en rad med ingen ordrelinjer tilgjengelig
+            tabell_ordrelinjer.insert("", "end", values=(
+                "Ingen ordrelinjer tilgjengelig",
+                "",
+                "",
+                "",
+                ""
+            ))                                                                  # Setter inn en rad med ingen ordrelinjer tilgjengelig
 
         # Betalingsstatus:
         etikett_betalt = customtkinter.CTkLabel(
@@ -265,18 +265,20 @@ class Ordrer(Tabell):
             self.detalj_visning_ramme.grid(padx=10, pady=10)                    # Plassering av ramme
             return True
         else:
-            return False                                                        # TODO: Feilhåndtering ?        
+            logging.error("Ingen detaljvisningramme tilgjengelig")              # Logger feil hvis detaljvisningrammen ikke kan vises
+            return False                                                                
 
     def generer_faktura(self):
         valgt_ordre = self.tabell.focus()
         verdier = self.tabell.item(valgt_ordre)["values"]
         if not verdier:
-            print("Ingen ordre valgt.")
+            logging.error("Ingen ordre valgt for fakturering")                  # Logger advarsel hvis ingen ordre er valgt
             return
 
         ordre_id = verdier[0]
-        kundeinfo = hent_spesifikk_kunde(verdier[4])  # Hent kundeinfo
-        ordrelinjer = hent_ordrelinjer(ordre_id)  # Hent ordrelinjer
+        kundeinfo = hent_spesifikk_kunde(verdier[4])                            # Hent kundeinfo
+        ordrelinjer = hent_ordrelinjer(ordre_id)                                
+        # Hent ordrelinjer
 
         # Forbered data for faktura
         kunde = f"{kundeinfo[1]} {kundeinfo[2]}"
@@ -326,7 +328,7 @@ class Ordrer(Tabell):
                 )
             print(f"Faktura generert:{fakturanummer}.pdf")
         except Exception as e:
-            print(f"Feil ved generering av faktura: {e}")
+            logging.error(f"Feil ved generering av faktura: {e}")
 
     def lukk_detaljer(self):
         if self.detalj_visning_ramme:

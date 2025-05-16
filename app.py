@@ -11,15 +11,15 @@ class App(customtkinter.CTk):
     def __init__(self):
         # Oppretter hovedvinduet:
         super().__init__()
-        self.title("Varelageret") # Setter tittelen på vinduet
+        self.title("Varelageret")                                               # Setter tittelen på vinduet
         self.minsize(1280, 720)
-        customtkinter.set_default_color_theme("theme.json") # Henter farger fra theme.json filen, der er fargene definert.
-        customtkinter.set_appearance_mode("light") #Tvinger programmet til å kjøre lys modus 
+        customtkinter.set_default_color_theme("theme.json")                     # Henter farger fra theme.json filen, der er fargene definert.
+        customtkinter.set_appearance_mode("light")                              #Tvinger programmet til å kjøre lys modus 
         self.iconbitmap("assets/icon.ico")
         self.geometry("1280x720")
-        self.grid_columnconfigure(0, weight=0) # Meny venstre side låser denne til 200px. weight=0 gjør at den ikke vokser.
-        self.grid_columnconfigure(1, weight=1) # Visningsvindu (resten av vinduet på høyre side )
-        self.grid_rowconfigure(0, weight=1) # Hele høyden
+        self.grid_columnconfigure(0, weight=0)                                  # Meny venstre side låser denne til 200px. weight=0 gjør at den ikke vokser.
+        self.grid_columnconfigure(1, weight=1)                                  # Visningsvindu (resten av vinduet på høyre side )
+        self.grid_rowconfigure(0, weight=1)                                     # Hele høyden
         # Oppretter menyen:
         self.opprett_meny()
         # Oppretter visningsruten:
@@ -32,18 +32,18 @@ class App(customtkinter.CTk):
         # Oppretter menyen på venstre side: (se https://customtkinter.tomschimansky.com/documentation/widgets/frame for forklaring)
         self.meny = customtkinter.CTkFrame(
             master=self,
-            fg_color="lightgrey", #tvinger grå sidemeny venstre side
+            fg_color="lightgrey",                                               #tvinger grå sidemeny venstre side
             corner_radius=2,
-            width=200, # Setter bredden på menyen til 200px
+            width=200,                                                          # Setter bredden på menyen til 200px
         )
         self.meny.grid(row=0, column=0, sticky="nsew", padx=0, pady=0)
-        self.meny.grid_columnconfigure(0, weight=1) # Sentrerer innhold
+        self.meny.grid_columnconfigure(0, weight=1)                             # Sentrerer innhold
 
         # Setter opp ikon her: 
         self.bilde = customtkinter.CTkImage(
             dark_image=Image.open("assets/icon.ico"), 
             light_image=Image.open("assets/icon.ico"),
-            size=(140, 140) # 140x140px tilsvarer bredden på knappene.
+            size=(140, 140)                                                     # 140x140px tilsvarer bredden på knappene.
         )
         self.bildeknapp = customtkinter.CTkButton(
             master=self.meny,
@@ -95,8 +95,7 @@ class App(customtkinter.CTk):
 
     def vis_modul(self, modul_klasse):
         # Funksjon for å vise en modul i visningsruten:
-        # Sletter innholdet i visningsruten:
-        for widget in self.visningsrute.winfo_children():
+        for widget in self.visningsrute.winfo_children():                       # Sletter innholdet i visningsruten:
             widget.destroy()
         # Oppretter ny modul:
         modul = modul_klasse(self.visningsrute)
