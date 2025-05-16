@@ -1,7 +1,7 @@
 CREATE DEFINER=`root`@`localhost` PROCEDURE `hent_alle_ordrer`(
-  IN p_limit  INT,
-  IN p_offset INT
-)
+  IN p_limit  INT,     #Henter ordrer og kundedetaljer med paginering (begrensning + forskyvning).
+  IN p_offset INT      #Brukes for å vise en ordreliste i GUI med fornavn, etternavn og adresse.
+                       #LIMIT og OFFSET gjør den egnet for store datasett.             
 BEGIN
   SELECT 
     o.OrdreNr,
