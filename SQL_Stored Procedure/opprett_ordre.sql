@@ -1,5 +1,5 @@
 CREATE DEFINER=`root`@`localhost` PROCEDURE `opprett_ordre`(
-    IN  in_KNr       INT,
+    IN  in_KNr       INT,        #Oppretter en ny ordre med automatisk generert OrdreNr
     IN  in_ordreDato DATE,
     OUT out_ordreNr  INT
 )

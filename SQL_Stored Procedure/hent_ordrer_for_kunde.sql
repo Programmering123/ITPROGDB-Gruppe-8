@@ -1,6 +1,7 @@
 CREATE DEFINER=`root`@`localhost` PROCEDURE `hent_ordrer_for_kunde`(
-    IN in_KNr INT
-)
+    IN in_KNr INT         #Returnerer en oversikt over alle ordrer for én kunde med:
+                           #TotalBelop,Antallordrelinjer
+
 BEGIN
     SELECT 
       o.OrdreNr,
