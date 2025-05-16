@@ -335,7 +335,7 @@ def kunde_opprett(
         fornavn: str, 
         etternavn: str, 
         adresse: str,   
-        postnr: int    
+        postnr: str    
     )->bool:
     """
     Funksjon for å legge til en kunde i databasen. 

@@ -271,7 +271,7 @@ class Kunder(Tabell):
 
         if self.kundenummer:                                                    # Sjekker vi skal oppdatere eller opprette kunde
             try:
-                db_kunde_oppdater(self.kundenummer, fornavn, etternavn, adresse, postnr)
+                db_kunde_oppdater(self.kundenummer, fornavn, etternavn, adresse, str(postnr))
                 print(f"Kunde {self.kundenummer} oppdatert med data: {fornavn} {etternavn}, {adresse}, {postnr}") # TODO: Fjernes
                 self.tabell_visning_ramme.lift(self.detalj_visning_ramme)       # Løfter tabellvisningrammen opp så den blir synlig
                 self.detalj_visning_ramme.grid_forget()                         # Skjuler detaljvisningrammen etter lagring av kunde.
@@ -280,7 +280,7 @@ class Kunder(Tabell):
                 print("Feil ved oppdatering av kunde")                          # TODO: Legg til feilmelding til bruker.
         else:
             try:    
-                db_kunde_opprett(fornavn, etternavn, adresse, postnr)
+                db_kunde_opprett(fornavn, etternavn, adresse, str(postnr))
                 print(f"Opprettet ny kunde med data: {fornavn} {etternavn}, {adresse}, {postnr}") # TODO: Fjernes
                 self.tabell_visning_ramme.lift(self.detalj_visning_ramme)       # Løfter tabellvisningrammen opp så den blir synlig
                 self.detalj_visning_ramme.grid_forget()                         # Skjuler detaljvisningrammen etter lagring av kunde.
