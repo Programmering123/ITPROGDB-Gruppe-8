@@ -2,7 +2,7 @@ CREATE DEFINER=`root`@`localhost` FUNCTION `fn_lagerstatus`(in_VNr CHAR(5)) RETU
     DETERMINISTIC
 BEGIN
   DECLARE v_ant INT;
-  DECLARE v_status VARCHAR(10);
+  DECLARE v_status VARCHAR(10);       #Gir lagerstatus: Lav hvis<5; Ok hvis 5-10; Høyt hvis >20
 
   SELECT Antall INTO v_ant
     FROM vare

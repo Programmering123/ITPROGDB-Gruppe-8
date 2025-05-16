@@ -6,7 +6,8 @@ BEGIN
   SELECT COALESCE(SUM(PrisPrEnhet * Antall), 0)
     INTO v_total
   FROM ordrelinje
-  WHERE OrdreNr = in_ordreNr;
+  WHERE OrdreNr = in_ordreNr;       #Summerer hele ordrebeløpet. Brukbar i faktura, oppsummeringer og rapporter.
+
 
   RETURN v_total;
 END
