@@ -294,7 +294,7 @@ def kunde_oppdater(
         fornavn: str,
         etternavn: str,
         adresse: str,
-        postnr: int
+        postnr: str
 )-> bool:
     """ 
     Funksjon for å oppdatere en kunde i databasen. 

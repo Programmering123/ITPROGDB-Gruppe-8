@@ -7,3 +7,4 @@ env/
 .venv/
 www/node_modules/
 fakturaer/
+logg/log.txt

@@ -60,7 +60,7 @@ def validering_adresse_sanntid(
         feilmelding.configure(text = "Maks 30 tegn")                            # Feilmelding til bruker
         feilmelding.grid(row=rad, column=2, sticky="nsew", padx=10, pady=10)    # Viser feilmelding
         return False
-    tillatt_regex = r"^[a-zA-Z0-9æøåÆØÅ\s.,-]+$"                                # Regex for tillatte karakterer
+    tillatt_regex = r"^[a-zA-Z0-9æøåÆØÅéÉ\s.,-]+$"                                # Regex for tillatte karakterer
     if not re.match(tillatt_regex, adresse):                                    # Sjekker om adressen inneholder tillatte karakterer 
         feilmelding.configure(text = "Kun bokstaver og tall")                   # Feilmelding til bruker
         feilmelding.grid(row=rad, column=2, sticky="nsew", padx=10, pady=10)    # Viser feilmelding
@@ -90,7 +90,7 @@ def validering_navn_sanntid(
         feilmelding.configure(text = "Maks 30 tegn")                            # Feilmelding til bruker
         feilmelding.grid(row=rad, column=2, sticky="nsew", padx=10, pady=10)    # Viser feilmelding
         return False
-    tillatt_regex = r"^[a-zA-ZæøåÆØÅ\s.,-]+$"                                   # Regex for tillatte karakterer
+    tillatt_regex = r"^[a-zA-ZæøåÆØÅéÉ\s.,-]+$"                                   # Regex for tillatte karakterer
     if not re.match(tillatt_regex, navn):                                       # Sjekker om navnet inneholder tillatte karakterer 
         feilmelding.configure(text = "Kun bokstaver")                           # Feilmelding til bruker
         feilmelding.grid(row=rad, column=2, sticky="nsew", padx=10, pady=10)    # Viser feilmelding
