@@ -1,14 +1,71 @@
 import os
 import datetime
+import logging
 from datetime import datetime, timedelta
 from fpdf import FPDF
 from moduler.hjelpere import bruker_varsel
-from api.database import lagre_faktura
+from api.database import lagre_faktura, hent_spesifikk_kunde, hent_ordrelinjer
+
+def generer_faktura(ordre_id, verdier):
+
+        ordre_id = verdier[0]
+        kundeinfo = hent_spesifikk_kunde(verdier[4])                            #henter kundeinfo
+        ordrelinjer = hent_ordrelinjer(ordre_id)                                #henter ordrelinjer
+
+        #forbereder innhold for faktura
+        kunde = f"{kundeinfo[1]} {kundeinfo[2]}"
+        adresse = kundeinfo[3]
+        postnummer = kundeinfo[4]
+        poststed = kundeinfo[5]
+        dato = verdier[2]
+        belop = sum(
+            linje[2] * linje[3] 
+            for linje in ordrelinjer
+            )
+        mva = belop / 25
+        total = belop + mva
+        betalingsbetingelser = 14
+        fakturanummer = generer_unikt_fakturanummer(ordrenummer=str(ordre_id), dato=dato)
+        ordrenummer = ordre_id
+        kundenummer = kundeinfo[0]
+        var_referanse = "Varelageret AS"
+        deres_referanse = kunde
+        betalingsinformasjon = "1234.56.78910"
+        kommentar = " "
+        vedlegg = "Ingen"
+
+        # Generer faktura
+        try:
+            lag_faktura(
+                kunde=kunde,
+                adresse=adresse,
+                postnummer=postnummer,
+                poststed=poststed,
+                dato=dato,
+                belop=belop,
+                mva=mva,
+                total=total,
+                betalingsbetingelser=betalingsbetingelser,
+                fakturanummer=fakturanummer,
+                ordrenummer=ordrenummer,
+                kundenummer=kundenummer,
+                var_referanse=var_referanse,
+                deres_referanse=deres_referanse,
+                betalingsinformasjon=betalingsinformasjon,
+                ordrelinjer=ordrelinjer,
+                kommentar=kommentar,
+                vedlegg=vedlegg,
+                unikt_nummer=fakturanummer,
+                filnavn=f"{fakturanummer}.pdf",
+                )
+            print(f"Faktura generert:{fakturanummer}.pdf")
+        except Exception as e:
+            logging.error(f"Feil ved generering av faktura: {e}")
 
 def generer_unikt_fakturanummer(ordrenummer: str, dato: str) -> str:
     """Genererer et unikt fakturanummer basert på dato og tid."""
-    tidstempel = datetime.now().strftime("%Y%m%d%H%M%S")  # ÅÅÅÅMMDDHHMMSS
-    dato_renset = dato.replace("-", "")  # Fjern bindestreker fra dato
+    tidstempel = datetime.now().strftime("%Y%m%d%H%M%S")                        # ÅÅÅÅMMDDHHMMSS
+    dato_renset = dato.replace("-", "")                                         # Fjern bindestreker fra dato
     return f"{ordrenummer}-{dato_renset}{tidstempel[:6]}" 
 
 def lag_faktura(
@@ -56,19 +113,19 @@ def lag_faktura(
         ordrelinjer (list): Liste med ordrelinjer, hver linje er en liste med varenr, beskrivelse, antall og pris.
     """
     #beregner forfallsdato
-    fakturadato = datetime.strptime(dato, "%Y-%m-%d")  # Konverter dato til datetime-objekt
-    forfallsdato = fakturadato + timedelta(days=betalingsbetingelser)# Legg til antall dager
-    forfallsdato_str = forfallsdato.strftime("%Y-%m-%d")  # Konverter tilbake til streng
+    fakturadato = datetime.strptime(dato, "%Y-%m-%d")                           # Konverter dato til datetime-objekt
+    forfallsdato = fakturadato + timedelta(days=betalingsbetingelser)           # Legg til antall dager
+    forfallsdato_str = forfallsdato.strftime("%Y-%m-%d")                        # Konverter tilbake til streng
 
-    fakturadato_str = fakturadato.strftime("%d.%m.%Y")  # Konverter dato til ønsket format
-    forfallsdato_str = forfallsdato.strftime("%d.%m.%Y")  # Konverter dato til ønsket format
+    fakturadato_str = fakturadato.strftime("%d.%m.%Y")                          #konverterer dato fra YYYY.MM.DD til dd.mm.yyyy
+    forfallsdato_str = forfallsdato.strftime("%d.%m.%Y")                        #konverterer dato fra YYYY.MM.DD til dd.mm.yyyy
 
     faktura_mappe = "fakturaer"
     if not os.path.exists(faktura_mappe):
         os.makedirs(faktura_mappe)
-    
-    #
+
     filsti = os.path.join(faktura_mappe, f"{fakturanummer}.pdf")
+    print(f"Fakturamappe: {faktura_mappe}")
 
     pdf = FPDF(format='A4')
     pdf.w = 210 
@@ -84,10 +141,10 @@ def lag_faktura(
     pdf.image("assets/logo.png", x=10, y=10, w=logo_bredde, h=logo_hoyde)       #plasserer logoen i øverste venstre hjørne av siden
     unikt_nummer = generer_unikt_fakturanummer(ordrenummer, dato)
 
-    # Legg til det unike nummeret i PDF-en
+    #legger til det unike nummeret i PDF-en øverst, i senter av fakturaen
     pdf.cell(190, 10, txt=f"Fakturanummer: {unikt_nummer}", ln=True, align="C")
    
-    #plassering av fakuraoverskrift og infofelt(kundeopplysninger)
+    #plassering av fakuraoverskrift og infofelt(kundeopplysninger, til venstre)
     x = pdf.w - 60
     y = 10
     pdf.w - logo_bredde - 20
@@ -113,14 +170,14 @@ def lag_faktura(
         pdf.set_x(x + 2)
         pdf.cell(pdf.w - 10, 5, txt=linje, ln=True, align="L")
 
-    #plassering av fakturainfo referanser (infofelt2)
+    #plassering av fakturainfo referanser (infofelt2, mottaker/kunde)
     x = pdf.w -200
     y = 90
     pdf.w = x + 190    
     hoyde = 60
 
     pdf.set_font("DejaVu", size=10, style="B")
-    pdf.cell(pdf.w, 10, txt="Leveringsadresse:", ln=True, align="L")
+    pdf.cell(pdf.w, 10, txt="Fakturamottaker:", ln=True, align="L")
     
     infofelt2 = [
         "{}".format(kunde),                                                     #navn på kunden
@@ -133,7 +190,7 @@ def lag_faktura(
         pdf.set_x(x + 4)
         pdf.cell(pdf.w - 10, 5, txt=linje, ln=True, align="L")
         
-    #pdf.rect(x, y, pdf.w - 10, hoyde)
+    #overskrift før tabell, ordreoversikt
     pdf.ln(10)
     pdf.cell(pdf.w, 10, txt="Fakturaoversikt for gjeldende ordre", ln=True, align="C"),
     pdf.set_font("DejaVu", size=10, style="B")  
@@ -149,7 +206,7 @@ def lag_faktura(
     pdf.ln()
     
     #tabellinnhold, ordrelinjer
-    # sjekker om ordrelinjer er tom eller har feil struktur
+    #sjekker om ordrelinjer er tom eller har feil struktur
     if not ordrelinjer or not all(len(linje) == 4 for linje in ordrelinjer):
         pdf.cell(
             pdf.w - 10, 10, txt="Ingen ordrelinjer tilgjengelig eller feil struktur.",
@@ -214,5 +271,5 @@ def lag_faktura(
         )
 
     print (ordrelinjer)
-  
+
 

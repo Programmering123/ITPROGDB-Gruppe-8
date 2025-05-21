@@ -3,7 +3,7 @@ from tkinter import ttk
 from api.database import hent_ordrer, hent_spesifikk_ordre, hent_ordrelinjer    # Importerer database funksjoner relatert til ordrer
 from api.database import hent_spesifikk_kunde                                   # Importerer database funksjoner relatert til kunder   
 from moduler.tabell import Tabell                                               # Importer TabellModul fra tabell.py
-from moduler.fakt import lag_faktura, generer_unikt_fakturanummer               # Importer lag_faktura fra fakt.py
+from moduler.fakt import generer_faktura                                        # Importer lag_faktura fra fakt.py
 import logging
 
 class Ordrer(Tabell):
@@ -45,6 +45,14 @@ class Ordrer(Tabell):
         )
         self.knapp_detaljer.grid(row=0, column=3, sticky="ne", padx=10, pady=10)
 
+    def generer_faktura_knapp(self):
+        valgt_ordre = self.tabell.focus()
+        verdier = self.tabell.item(valgt_ordre)["values"]
+        if not verdier:
+            logging.error("Ingen ordre valgt for fakturering")                  # Logger advarsel hvis ingen ordre er valgt
+            return
+        ordre_id = verdier[0]
+        generer_faktura(ordre_id, verdier)
         
     # Detaljvisning av ordre:
     def vis_detaljer(self, ordre):
@@ -107,7 +115,7 @@ class Ordrer(Tabell):
         knapp_genere_faktura = customtkinter.CTkButton(
             master=ramme_header,
             text="Generer faktura",
-            command=lambda: self.generer_faktura()
+            command=lambda: self.generer_faktura_knapp()
         )
         knapp_genere_faktura.grid(row=2,column=2,sticky="nw", padx=10, pady=10)
 
@@ -268,7 +276,7 @@ class Ordrer(Tabell):
             logging.error("Ingen detaljvisningramme tilgjengelig")              # Logger feil hvis detaljvisningrammen ikke kan vises
             return False                                                                
 
-    def generer_faktura(self):
+    # def generer_faktura(self): 
         valgt_ordre = self.tabell.focus()
         verdier = self.tabell.item(valgt_ordre)["values"]
         if not verdier:
