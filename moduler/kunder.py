@@ -96,7 +96,7 @@ class Kunder(Tabell):
             self.kundenummer, fornavn, etternavn, adresse, postnr = kundedata   # Legger dataen til passende variabler
         
         if not self.vis_detalj_ramme():
-            print("Feil ved oppretting av detaljvisningramme")                  # TODO: Legg til feilmelding til bruker.
+            bruker_varsel("Feil ved oppretting av detaljvisningramme", "error") # Viser feilmelding til bruker
             return False
 
 

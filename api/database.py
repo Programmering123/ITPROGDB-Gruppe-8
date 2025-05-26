@@ -88,7 +88,7 @@ def hent_ordre(ordre_id: int) -> Dict[str, Any]:
         Dict: med ordre data
     """
     logging.info(f"Henter spesifik ordre med ID: {ordre_id}")                   # Logger at vi henter spesifik ordre
-    if ordre_id and isinstance(ordre_id, int) and ordre_id > 0:                # Sjekker om ordre_id er gyldig
+    if ordre_id and isinstance(ordre_id, int) and ordre_id > 0:                 # Sjekker om ordre_id er gyldig
         try:
             databasen = tilkobling_database() 
             spørring = databasen.cursor() 

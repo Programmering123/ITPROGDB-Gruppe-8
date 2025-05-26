@@ -48,14 +48,6 @@ class Ordrer(Tabell):
         )
         self.knapp_detaljer.grid(row=0, column=3, sticky="ne", padx=10, pady=10)
 
-    def generer_faktura_knapp(self):
-        valgt_ordre = self.tabell.focus()
-        verdier = self.tabell.item(valgt_ordre)["values"]
-        if not verdier:
-            logging.error("Ingen ordre valgt for fakturering")                  # Logger advarsel hvis ingen ordre er valgt
-            return
-        ordre_id = verdier[0]
-        generer_faktura(ordre_id, verdier)
         
     # Detaljvisning av ordre:
     def vis_detaljer(self, ordre):

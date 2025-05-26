@@ -3,21 +3,20 @@ import datetime
 import logging
 from datetime import datetime, timedelta
 from fpdf import FPDF
+from typing import Any
 from moduler.hjelpere import bruker_varsel
 from api.database import lagre_faktura, hent_kunde, hent_ordrelinjer
 
-def generer_faktura(ordredata: list) -> None:
+def generer_faktura(ordredata: dict[str, Any]) -> None:
 
-
-        kundeinfo = hent_kunde(verdier[4])                            #henter kundeinfo
+        ordre_id = ordredata['OrdreNr']
+        kundeinfo = hent_kunde(ordredata['KNr'])                            #henter kundeinfo
         ordrelinjer = hent_ordrelinjer(ordre_id)                                #henter ordrelinjer
 
         #forbereder innhold for faktura
-        kunde = f"{kundeinfo[1]} {kundeinfo[2]}"
-        adresse = kundeinfo[3]
-        postnummer = kundeinfo[4]
-        poststed = kundeinfo[5]
-        dato = verdier[2]
+        (kunde_nr, fornavn, etternavn, adresse, postnummer, poststed) = kundeinfo
+        kunde = fornavn + " " + etternavn
+        dato = str(ordredata['OrdreDato'])
         belop = sum(
             linje[2] * linje[3] 
             for linje in ordrelinjer
