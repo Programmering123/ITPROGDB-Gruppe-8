@@ -490,5 +490,10 @@ if __name__ == "__main__":
 
 else:                                                                           # Hvis database.py er importert som modul
     logging.debug("Database.py er importert")
-    tilgjengelige_postnumre = hent_postnr()                                     # Henter postnr fra databasen
-    logging.debug(f"Tilgjengelige postnumre er importert.")                     # Logger tilgjengelige postnr
+    try:
+        tilgjengelige_postnumre = hent_postnr()                                     # Henter postnr fra databasen
+        logging.debug(f"Tilgjengelige postnumre er importert.")                     # Logger tilgjengelige postnr
+    except Exception as e:
+        logging.error(f"Feil ved henting av postnumre: {e}")                       # Logger feil ved henting av postnr
+        tilgjengelige_postnumre = []                                                # Setter tilgjengelige postnr til tom liste hvis feil
+        print("Kunne ikke hente postnumre fra databasen. Vennligst sjekk loggen.")

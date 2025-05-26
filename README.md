@@ -45,11 +45,18 @@ Dette prosjektet har som mål å utvikle en brukervennlig GUI-applikasjon for å
 * Rapport (10-12 sider).
 * Presentasjon (15-20 minutter).
 
-## 📂 Struktur
+## 📂 Oppsett
+
+# Autokonfigurasjon:
+
+
 
 # Starte Virtual Environment, kjør disse kommandoene: 
 Set-ExecutionPolicy Unrestricted -Scope Process
 .\.venv\Scripts\activate
+
+
+
 
 # Innstallerer moduler:
 pip install -r .\requirements.txt
@@ -71,32 +78,3 @@ Standard Font i programmet er "Roboto".
 # WebAPI:
 py -m api.app
 
-# Database SP(Store Procedure)
-## Oppdater:
-CREATE PROCEDURE `kunde_oppdater`(
-	IN kundenummer VARCHAR(10),
-    IN fornavn VARCHAR(255),
-    IN etternavn VARCHAR(255),
-    IN adresse VARCHAR(255),
-    IN postnr VARCHAR(10)
-)
-BEGIN
-	UPDATE `varehusdb`.`kunde` 
-    SET `Adresse` = adresse,
-    `Fornavn` = fornavn,
-	`Etternavn` = etternavn,
-    `Postnr` = postnr
-    WHERE (`KNr` = kundenummer);
-END
-## Opprett:
-CREATE PROCEDURE `kunde_opprett`(
-    IN fornavn VARCHAR(255),
-    IN etternavn VARCHAR(255),
-    IN adresse VARCHAR(255),
-    IN postnr VARCHAR(10)
-)
-BEGIN
-    SELECT MAX(KNr) INTO @siste_knr FROM kunde;
-    SET @ny_knr = IFNULL(@siste_knr, 0) + 1;
-    INSERT INTO kunde (KNr, Fornavn, Etternavn, Adresse, PostNr) VALUES (@ny_knr, fornavn, etternavn, adresse, postnr);
-END
