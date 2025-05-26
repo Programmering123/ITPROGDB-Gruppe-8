@@ -270,7 +270,7 @@ def hent_kunde(kunde_id: int) -> Any:
         try:
             databasen = tilkobling_database() # Koble til databasen
             spørring = databasen.cursor() # Dette er en virituell "markør"
-            spørring.execute(f"SELECT kunde.KNr, kunde.Fornavn, kunde.Etternavn, kunde.Adresse, kunde.PostNr, poststed.Poststed FROM kunde INNER JOIN poststed ON kunde.PostNr = poststed.PostNr WHERE kunde.Knr = {kunde_id} LIMIT 1") # TODO: Stored procedure i stedet for spørring
+            spørring.execute(f"SELECT kunde.KNr, kunde.Fornavn, kunde.Etternavn, kunde.Adresse, kunde.PostNr, poststed.Poststed FROM kunde INNER JOIN poststed ON kunde.PostNr = poststed.PostNr WHERE kunde.Knr = {kunde_id} LIMIT 1") 
             
             resultat = spørring.fetchone() # Lagrer resultat fra spørring
             return resultat # Returnerer resultatet
@@ -305,13 +305,17 @@ def slett_kunde(kunde_id: int)-> int:
     Returns: 
         kunde_id hvis sletting var vellykket, 0 ellers.
     """
-    if kunde_id != None:
+    if kunde_id is not None and kunde_id > 0:                     # Sjekker om kunde_id er gyldig
         try:
             databasen = tilkobling_database()                                   # Koble til databasen
             spørring = databasen.cursor()                                       # Dette er en virituell "markør"
-            spørring.execute(f"DELETE FROM kunde WHERE kunde.KNr = {kunde_id}") # TODO: Stored procedure i stedet for spørring
+            spørring.execute(f"DELETE FROM kunde WHERE kunde.KNr = {kunde_id}") 
             databasen.commit()                                                  # Utfører handling
-        except:
+        except mysql.connector.IntegrityError as err:
+            logging.error(f"Feil ved sletting av kunde: {err}")                  # Logger feil ved sletting av kunde
+            return 0                                                            # Returnerer 0 hvis sletting mislyktes
+        except mysql.connector.Error as err:
+            logging.error(f"Feil ved sletting av kunde: {err}")                  # Logger feil ved sletting av kunde
             return 0                                                            # Returnerer 0 hvis sletting mislyktes
         finally:
             if databasen:
@@ -354,7 +358,7 @@ def oppdater_kunde(
         try:
             databasen = tilkobling_database() # koble til databasen
             spørring = databasen.cursor() 
-            spørring.callproc('kunde_oppdater', kunde_data ) 
+            spørring.callproc('oppdater_kunde', kunde_data ) 
             databasen.commit()
             return True
         except:
@@ -394,7 +398,7 @@ def opprett_kunde(
         try:
             databasen = tilkobling_database()                                   
             spørring = databasen.cursor() 
-            spørring.callproc('kunde_opprett', kunde_data)                      # Sender kunde_data til kunde_opprett SP
+            spørring.callproc('opprett_kunde', kunde_data)                      # Sender kunde_data til kunde_opprett SP
             databasen.commit()
             return True
         except:
@@ -491,9 +495,9 @@ if __name__ == "__main__":
 else:                                                                           # Hvis database.py er importert som modul
     logging.debug("Database.py er importert")
     try:
-        tilgjengelige_postnumre = hent_postnr()                                     # Henter postnr fra databasen
-        logging.debug(f"Tilgjengelige postnumre er importert.")                     # Logger tilgjengelige postnr
+        tilgjengelige_postnumre = hent_postnr()                                 # Henter postnr fra databasen
+        logging.debug(f"Tilgjengelige postnumre er importert.")                 # Logger tilgjengelige postnr
     except Exception as e:
-        logging.error(f"Feil ved henting av postnumre: {e}")                       # Logger feil ved henting av postnr
-        tilgjengelige_postnumre = []                                                # Setter tilgjengelige postnr til tom liste hvis feil
+        logging.error(f"Feil ved henting av postnumre: {e}")                    # Logger feil ved henting av postnr
+        tilgjengelige_postnumre = []                                            # Setter tilgjengelige postnr til tom liste hvis feil
         print("Kunne ikke hente postnumre fra databasen. Vennligst sjekk loggen.")

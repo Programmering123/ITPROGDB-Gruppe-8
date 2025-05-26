@@ -48,7 +48,10 @@ Dette prosjektet har som mål å utvikle en brukervennlig GUI-applikasjon for å
 ## 📂 Oppsett
 
 # Autokonfigurasjon:
-
+"assets/varehusdb.sql" Må være kjørt på lokal database
+Anbefales å opprette egen bruker/passord
+kjør "init.py" i python f eks. "py.exe init.py" følg instrukser
+kjør "pip install -r requirements.txt"
 
 
 # Starte Virtual Environment, kjør disse kommandoene: 
@@ -70,10 +73,6 @@ DB_USER = "brukernavn"
 DB_PASSWORD = "passord"
 DB_PORT = "3306"
 
-# Definering av variabler og typebeskrivelse:
-variabler prøver vi å definere som <hva>_<navn>. F.eks. en knapp til kunder : knapp_kunder = customtkinter.CTkButton()...
-Også fint å prøve å typebeskrive funksjoner og variabler. F.eks. tekst_knapp_kunder: str = "Kunder". Her er det definert at tekst_knapp_kunder er en string, Kan også definere for funksjoner: def funksjon(streng: str)-> bool: Her får man tydelig tilbakemelding at denne funksjonen returnerer en Boolean(True/False). 
-Standard Font i programmet er "Roboto".
 
 # WebAPI:
 py -m api.app

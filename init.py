@@ -198,5 +198,6 @@ if __name__ == "__main__":
         print("Database initialisert ")                                         # Informerer om at databasen er initialisert og prosedyrer er opprettet
         if opprett_prosedyrer():
             print("Prosedyrer opprettet i databasen.")
+            
     else:
         print("Database initialisering feilet. Slett .env filen og prøv igjen.")

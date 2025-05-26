@@ -1,5 +1,10 @@
+"""
+Dette er Ordrer modulen for å vise ordrer i GUI.
+Denne er basert på tabellmodulen, og viser ordrer i en tabell.
+I tillegg har den en detaljvisning som viser detaljer om den valgte ordren.
+"""
 import logging
-from typing import Any
+from typing import Any, Literal
 from decimal import Decimal
 
 import customtkinter
@@ -8,6 +13,7 @@ from api.database import hent_ordrer, hent_ordre, hent_ordrelinjer              
 from api.database import hent_kunde                                             # Importerer database funksjoner relatert til kunder   
 from moduler.tabell import Tabell                                               # Importer TabellModul fra tabell.py
 from moduler.fakt import generer_faktura                                        # Importer lag_faktura fra fakt.py
+from moduler.hjelpere import bruker_varsel                                        # Importerer bruker_varsel funksjonen for å vise varsler til brukeren
 
 class Ordrer(Tabell):
     def __init__(self, master):
@@ -50,20 +56,23 @@ class Ordrer(Tabell):
 
         
     # Detaljvisning av ordre:
-    def vis_detaljer(self, ordre):
+    def vis_detaljer(self, ordre:list[Any]|Literal['']):
         """
         Funksjon for å vise detaljer om orderen.
         Args:
             ordre (tuple): Informasjon om valgt ordre fra tabell.
         """
-        if ordre is not None:                                                   # TODO: Hvis header i tabellen blir klikket på så får vi en error her.
+        if ordre is not None and isinstance(ordre, list):
             ordre_id, ordre_kunde_id = ordre[0], ordre[4]                       # Henter ordrenummeret og kundenummeret fra den valgte ordren
             ordredata = hent_ordre(ordre_id)                                    # Henter ordredata for den valgte ordren
             ordrelinjer = hent_ordrelinjer(ordre_id)                            # Henter ordrelinjene for den valgte ordren
             kundeinfo = hent_kunde(ordre_kunde_id)                              # Henter kundeinfo for den valgte ordren
         else:
+            bruker_varsel(
+                "Vennligst velg en ordre for å vise detaljer.",
+                "warning")                                                      # Viser varsel til bruker hvis ingen ordre er valgt
             logging.warning("Vis detaljer, Ingen ordre valgt")                  # Logger advarsel hvis ingen ordre er valgt
-            return False                                                        
+            return False                                                        # Avlutter funksjonen
 
         if not self.vis_ramme_detalj():                                         # Tegner frem detaljrammen og sjekker om den er synlig
             logging.error("Feil ved visning av detaljvisningrammen")            # Logger feil hvis detaljvisningrammen ikke kan vises

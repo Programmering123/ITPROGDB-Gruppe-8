@@ -1,7 +1,7 @@
-# TODO: Lage oversikt over varelager, i tillegg mulighet for å legge til og fjerne ting?
-# Oppgaveteksten:
-# Vise en liste over hvilke varer som er på varelageret, inkludert varenummer, navn på varen, antall og pris.  
-# I tillegg til å vise varelageret i selv Python programmet skal dere ved bruk av en API vise varelageret i en nettleser.
+"""
+varelager modul for å vise varelageret i GUI
+Denne er basert på tabellmodulen, og viser varelageret i en tabell.
+"""
 from api.database import hent_varelager
 from moduler.tabell import Tabell # Importer TabellModul fra tabellmodul.py
 
@@ -14,7 +14,7 @@ class Varelager(Tabell):
             "Betegnelse",
             "Antall", 
             "Pris"
-            ] # TODO: Sjekk ut og hent riktig data.
+            ] 
 
     def hent_data(self):
         return hent_varelager()  # Henter kunder fra databasen

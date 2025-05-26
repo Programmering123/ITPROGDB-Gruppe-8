@@ -3,6 +3,8 @@ Tabell.py
 Dette er en klasse for å lage en tabellvisning i et GUI-program.
 Den er laget for å være en baseklasse som kan brukes av andre moduler.
 """
+import logging
+from typing import Any, Literal
 from tkinter import ttk
 import customtkinter
 
@@ -147,8 +149,14 @@ class Tabell:
         self.tabell.grid(row=0, column=0, sticky="new", padx=10, pady=10)
         self.tabell.bind(
             "<Double-1>",                                                       # Binder dobbeltklikk
-            lambda event: self.vis_detaljer(                                    # Bruker en lambda funksjon som peker til funksjon
-                self.tabell.item(self.tabell.focus())['values']                 # Sende verdiene til valgt rad som argument
+            lambda event: (
+                self.vis_detaljer(                                              # Bruker en lambda funksjon som peker til funksjon
+                    self.tabell.item(self.tabell.focus())['values']             # Sende verdiene til valgt rad som argument
+                )
+                if self.tabell.focus() and self.tabell.identify_region(
+                    event.x, event.y == "cell"
+                )                                                               # Sjekker om det er valgt en rad og at det er en celle som er klikket på
+                else None
             )
         )       
         
@@ -221,7 +229,7 @@ class Tabell:
         raise NotImplementedError("Denne funksjonen må implementeres i SubClass.")
     
     # Blank definering av detaljvisning, må implementeres i SubClass:
-    def vis_detaljer(self, data:list=[]):
+    def vis_detaljer(self, data:list[Any]|Literal['']=[]):
         """Viser detaljer for valgt rad. Denne funksjonen må implementeres i SubClass."""
         raise NotImplementedError("Denne funksjonen må implementeres i SubClass.")
 

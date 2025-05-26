@@ -10,7 +10,7 @@ from api.database import lagre_faktura, hent_kunde, hent_ordrelinjer
 def generer_faktura(ordredata: dict[str, Any]) -> None:
 
         ordre_id = ordredata['OrdreNr']
-        kundeinfo = hent_kunde(ordredata['KNr'])                            #henter kundeinfo
+        kundeinfo = hent_kunde(ordredata['KNr'])                                #henter kundeinfo
         ordrelinjer = hent_ordrelinjer(ordre_id)                                #henter ordrelinjer
 
         #forbereder innhold for faktura
@@ -22,7 +22,7 @@ def generer_faktura(ordredata: dict[str, Any]) -> None:
             for linje in ordrelinjer
             )
         mva = belop / 25
-        total = belop + mva
+        total = int(belop) + int(mva)
         betalingsbetingelser = 14
         fakturanummer = generer_unikt_fakturanummer(ordrenummer=str(ordre_id), dato=dato)
         ordrenummer = ordre_id
@@ -41,8 +41,8 @@ def generer_faktura(ordredata: dict[str, Any]) -> None:
                 postnummer=postnummer,
                 poststed=poststed,
                 dato=dato,
-                belop=belop,
-                mva=mva,
+                belop=float(belop),
+                mva=float(mva),
                 total=total,
                 betalingsbetingelser=betalingsbetingelser,
                 fakturanummer=fakturanummer,
