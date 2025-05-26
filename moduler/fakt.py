@@ -4,12 +4,12 @@ import logging
 from datetime import datetime, timedelta
 from fpdf import FPDF
 from moduler.hjelpere import bruker_varsel
-from api.database import lagre_faktura, hent_spesifikk_kunde, hent_ordrelinjer
+from api.database import lagre_faktura, hent_kunde, hent_ordrelinjer
 
-def generer_faktura(ordre_id, verdier):
+def generer_faktura(ordredata: list) -> None:
 
-        ordre_id = verdier[0]
-        kundeinfo = hent_spesifikk_kunde(verdier[4])                            #henter kundeinfo
+
+        kundeinfo = hent_kunde(verdier[4])                            #henter kundeinfo
         ordrelinjer = hent_ordrelinjer(ordre_id)                                #henter ordrelinjer
 
         #forbereder innhold for faktura

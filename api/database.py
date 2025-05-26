@@ -1,9 +1,20 @@
-# Tester tilkobling til database
+"""
+database.py - Databasehåndtering for Varelageret
+
+Dette er en database modul for å håndtere tilkobling og spørringer til en MySQL database.
+Den bruker mysql-connector-python for å koble til databasen og utføre spørringer.
+Den bruker også dotenv for å håndtere sensitive data som brukernavn og passord.
+Den inneholder funksjoner for å hente ordrer, ordrelinjer, varelager, kunder og postnummer.
+Den inneholder også funksjoner for å oppdatere og opprette kunder, samt slette kunder.
+Den inneholder også en funksjon for å lagre fakturaer i databasen.
+Den inneholder også en funksjon for å validere inndata.
+"""
+from typing import Dict, Any, Optional, Union, List
+from decimal import Decimal
 import mysql.connector  
 from dotenv import load_dotenv, dotenv_values
 import os
 from pathlib import Path
-from typing import Dict, Any, Optional, Union
 import decimal
 import logging
 # Henter variabler fra .env filen
@@ -11,10 +22,6 @@ dotenv_path = Path('secrets.env')
 load_dotenv(dotenv_path=dotenv_path)
 
 # Setter opp variabler fra .env fil, tilpasset hver unike database.
-DB_USER = os.getenv("DB_USER")
-DB_HOST = os.getenv("DB_HOST")
-DB_PASSWORD = os.getenv("DB_PASSWORD")
-DB_PORT = os.getenv("DB_PORT")
 
 logging.basicConfig(
     filename='./logg/log.txt',                                                  # Filnavn for loggfilen
@@ -22,45 +29,83 @@ logging.basicConfig(
     format='%(asctime)s:%(levelname)s:%(message)s'                              # Format for loggmeldinger
 )
 logging.debug("Logger opprettet")                                               # Logger at logger er opprettet
-# Funksjon for å koble til databasen
-def tilkobling_database():
-    return mysql.connector.connect(                                             # Tilkoblingen til databasen
-        host=DB_HOST,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database = 'varehusdb' # Valgt database.
-    )
 
-# TODO: Opprette flere funksjoner for hver spørring vi trenger (hva slags spørringer må vi ha? Se i oppgaven.)
-# Funksjon for å hentre ordrer: # TODO: Tenker at denne SQLen kan være fin å ha som stored procedure i databasen.
-def hent_ordrer(): 
+"""
+Initierer, ved å sjekke om vi kan koble til databasen.
+er det angitt brukernavn og passord i .env filen.?
+Kan vi angi egen bruker og passord. 
+Kan vi kryptere passordet i .env filen?
+Instruks: Bruker i database trenger kun tilgang til stored procedure.
+Under oppsett så trenger vi tilgang til hele databasen.
+Kun stored procedure i databasen, ingen spørringer.
+eller.
+"""
+# Funksjon for å koble til databasen
+
+def tilkobling_database():
+    DB_USER = os.getenv("DB_USER")
+    DB_HOST = os.getenv("DB_HOST")
+    DB_PASSWORD = os.getenv("DB_PASSWORD")
+    DB_PORT = os.getenv("DB_PORT")
     try:
-        logging.info("Henter ordrelinjer fra databasen") # Logger at vi henter ordrelinjer
-        databasen = tilkobling_database() # Koble til databasen
-        spørring = databasen.cursor() # Dette er vel en virituell "markør"
-        # Spørringen henter alle rader fra definerte kolonner, og satt LIMIT til 3000 rader, 
-        # virker som om dette virker bra og for denne datamengden er det en fin løsning, 
-        # ved større datamengder så måtte vi nok begrenset henting.
-        linje = """SELECT OrdreNr, Fornavn, OrdreDato, BetaltDato, ordre.KNr 
-        FROM ordre INNER JOIN kunde ON ordre.KNr = kunde.KNr LIMIT 0,3000"""    # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
-        spørring.execute(linje)                                                 # Spørringen 
-        resultat = spørring.fetchall()                                          # Lagrer resultat fra spørring
-        return resultat                                                         # Returnerer resultatet
+        tilkobling = mysql.connector.connect(                                   # Tilkoblingen til databasen
+            host=DB_HOST,
+            user=DB_USER,
+            password = DB_PASSWORD,                                             # Passord til databasen
+            database = 'varehusdb',                                             # Valgt database
+            port=DB_PORT                                                        # Port til databasen
+        )
+        logging.info("Tilkobling til database opprettet")                       # Logger at vi har opprettet tilkobling 
+        return tilkobling                   
+    except mysql.connector.Error as err:
+        logging.error(f"Feil ved tilkobling til database: {err}")               # Logger ved feil tilkobling
+        raise ConnectionError(
+            "Kunne ikke koble til database. Sjekk .env filen og at databasen er oppe."
+            )                                                                   # Kaster en feilmelding hvis tilkobling mislykkes
+
+## ORDREHÅNDTERING 
+def hent_ordrer():   
+    """ Henter alle ordrer fra databasen.""" 
+    try:
+        logging.info("Henter ordrelinjer fra databasen")                        # Logger at vi henter ordrelinjer
+        databasen = tilkobling_database()                                       # Koble til databasen
+        spørring = databasen.cursor()                                           # Starter spørring
+        spørring.callproc('hent_ordrer')                                        # Starter prosedyre
+        for resultater in spørring.stored_results():
+            svar = resultater.fetchall()                                        # Henter alle resultater fra prosedyren
+        return svar                                                             # Returnerer alle ordrer fra databasen
     except mysql.connector.Error as err:
         logging.error(f"Feil ved henting av ordrelinjer: {err}")
         return []
+
 # Funksjon for å hente all data fra spesifikk ordre:
-def hent_spesifikk_ordre(ordre_id: int) -> Optional[Dict[str, Any]]:
+def hent_ordre(ordre_id: int) -> Dict[str, Any]:
+    """
+    Funksjon for å hente spesifik ordre fra databasen.
+    Args:
+        ordre_id: int mer enn 0 og maks 10 desimaler
+    Returns:
+        Dict: med ordre data
+    """
     logging.info(f"Henter spesifik ordre med ID: {ordre_id}")                   # Logger at vi henter spesifik ordre
-    if(ordre_id != None):
+    if ordre_id and isinstance(ordre_id, int) and ordre_id > 0:                # Sjekker om ordre_id er gyldig
         try:
             databasen = tilkobling_database() 
             spørring = databasen.cursor() 
-            spørring.execute(f"SELECT OrdreNr, OrdreDato, SendtDato, BetaltDato, KNr FROM ordre WHERE OrdreNr = {ordre_id}") # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
+            spørring.execute(f"""
+                SELECT 
+                    OrdreNr,
+                    OrdreDato,
+                    SendtDato,
+                    BetaltDato,
+                    KNr 
+                FROM ordre 
+                WHERE OrdreNr = {ordre_id}
+                """)                                                            # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
             resultat = spørring.fetchone()                                      # Lagrer resultat fra spørring, kun en linje
-            if resultat:                                                        # Gjør om resultatet til object <3
+            if resultat:                                                        # Gjør om resultatet til dictionary hvis det ikke er tomt:
                 kolonner = [beskrivelse[0] for beskrivelse in spørring.description] # Henter kolonnebeskrivelser
-                resultat = dict(zip(kolonner, resultat))                        # Lager en dict av resultatet med kolonnenavn som nøkler
+                resultat: dict[str, Any] = dict(zip(kolonner, resultat))        # Lager en dict av resultatet med kolonnenavn som nøkler
             return resultat                                                     # Returnerer resultatet
         except mysql.connector.Error as err:
             logging.error(f"Feil ved henting av spesifikke ordrelinjer: {err}")
@@ -76,21 +121,29 @@ def hent_spesifikk_ordre(ordre_id: int) -> Optional[Dict[str, Any]]:
     
 # Funksjon for henting av ordrelinjer:
 def hent_ordrelinjer(ordre_id):
+    """
+    Funksjon for å hente ordrelinjer for en spesifik ordre.
+    Args:
+        ordre_id: int mer enn 0 og maks 10 desimaler
+    Returns:
+        List: med ordrelinjer
+    """
     try:
         databasen = tilkobling_database()                                       # Koble til databasen
         spørring = databasen.cursor()                                           # Dette er en virituell "markør"
-        spørring.execute(f"SELECT ordrelinje.VNr, Betegnelse, ordrelinje.Antall, PrisPrEnhet FROM varehusdb.ordrelinje INNER JOIN vare ON ordrelinje.VNr = vare.VNr WHERE OrdreNr = {ordre_id} LIMIT 1000;") # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
-        resultat = spørring.fetchall() # Lagrer resultat fra spørring
+        spørring.execute(f"""
+            SELECT 
+                ordrelinje.VNr,
+                Betegnelse,
+                ordrelinje.Antall,
+                PrisPrEnhet
+            FROM varehusdb.ordrelinje 
+            INNER JOIN vare ON ordrelinje.VNr = vare.VNr 
+            WHERE OrdreNr = {ordre_id} 
+            LIMIT 1000;
+            """)                                                                # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare tabellen.
+        resultat:list[tuple[str, str, int, Decimal]] = spørring.fetchall()      # Lagrer resultat fra spørring
         return resultat # Returnerer resultatet
-        # Legger denne her: Hvis vi skal bruke stored procedure i stedet for spørring
-        # Og hvordan rydde opp resultatet til en dict... 
-        # spørring.callproc('HentOrdreDetaljer', (ordre_id,))  # Bruk stored procedure
-        # kolonner = ["VNr", "Betegnelse", "Antall", "PrisPrEnhet"]
-        # resultat = []
-        # for res in spørring.stored_results():
-        #     resultat = res.fetchall()
-        # return [dict(zip(kolonner, row)) for row in resultat]
-
     except mysql.connector.Error as err:
         logging.error(f"Feil ved henting av ordrelinjer: {err}")
         return []
@@ -100,32 +153,38 @@ def hent_ordrelinjer(ordre_id):
         if spørring:
             spørring.close()
 
-# Funksjon for å hente varelageret: (oppgave: Vise en liste over hvilke varer som er på varelageret, inkludert varenummer, navn på varen, antall og pris. )
-# Tilgjengelige kolonner i vare: VNr, Betegnelse, Pris, KatNr, Antall, Hylle 
+## VARELAGERHÅNDTERING
+# Funksjon for å hente varelageret:
 def hent_varelager():
     try:
         databasen = tilkobling_database() # Koble til databasen
         spørring = databasen.cursor() # Dette er en virituell "markør"
-        spørring.execute("SELECT VNr, Betegnelse, Antall, Pris FROM vare LIMIT 1000") # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
-        resultat = spørring.fetchall() # Lagrer resultat fra spørring
-        return resultat # Returnerer resultatet
+        spørring.callproc('hent_varelager') # Velger prosedyre for henting av varelager
+        for resultater in spørring.stored_results():    
+            svar = resultater.fetchall() # Henter alle resultater fra prosedyren
+        return svar # Returnerer resultatet
     except mysql.connector.Error as err:
         logging.error(f"Feil ved henting av varelager: {err}")  
         return []
 
 # Funksjon for å hentet varer til API-en, som er en liste med dictionaries.
 def hent_varer():
+    """ Funksjon for å hente varer fra databasen som en liste med dictionaries.
+    Denne er kun for brukt til API-en, og ikke for GUI-en.
+    Returns:
+        List[Dict[str, Union[int, str, float]]]: Liste med dictionaries som inneholder varer.
+    """
     databasen = None
     spørring = None
     try:
         databasen = tilkobling_database()
         if not databasen or not databasen.is_connected():
             logging.error("Feil: Kunne ikke koble til database eller ugyldig forbindelse.")
-            return [] # Returner tom liste hvis ingen gyldig tilkobling
+            return []                                                           # Returner tom liste hvis ingen gyldig tilkobling
 
         spørring = databasen.cursor()
         sql_query = "SELECT VNr, Betegnelse, Antall, Pris FROM vare LIMIT 1000"
-        kolonnenavn_for_zip = ["VNr", "Betegnelse", "Antall", "Pris"] # Bruker dine opprinnelige navn
+        kolonnenavn_for_zip = ["VNr", "Betegnelse", "Antall", "Pris"]           # Kolonnenavn for å lage dict med zip
         spørring.execute(sql_query)
         hentet_tuples = spørring.fetchall()
         
@@ -154,7 +213,7 @@ def hent_varer():
                         vare_dict['Antall'] = int(vare_dict['Antall'])
                     except (ValueError, TypeError):
                         logging.warning(f"Advarsel: Kunne ikke konvertere Antall '{vare_dict['Antall']}' til int for VNr '{vare_dict.get('VNr')}'. Setter til None.")
-                        vare_dict['Antall'] = None # Eller en annen feilhåndtering
+                        vare_dict['Antall'] = None 
         
         return resultat_liste_med_dicts
 
@@ -180,23 +239,53 @@ def hent_varer():
                 logging.error(f"Feil ved lukking av database: {e_db}")
 
 
+## KUNDERHÅNDTERING:
 # Funksjon for å hente alle kunder.
-def kunder_hent(): #TODO: Korriger denne til å hente en stored procedure i databasen, opprett en stored procedure.
+def hent_kunder():
+    """
+    Funksjon for å hente alle kunder fra databasen.
+    Returns:
+        List: [(KNr, Fornavn, Etternavn, Adresse, PostNr)]
+    """
     try:
-        databasen = tilkobling_database() # Koble til databasen
-        spørring = databasen.cursor() # Dette er en virituell "markør"
-        spørring.execute("SELECT KNr, Fornavn, Etternavn, Adresse, PostNr FROM kunde LIMIT 1000") # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
-        resultat = spørring.fetchall() # Her skal vi bare ha 1 linje, så vi bruker fetchone() i stedet for fetchall()
-        return resultat # Returnerer resultatet
+        databasen = tilkobling_database() 
+        spørring = databasen.cursor() 
+        spørring.callproc('hent_kunder')                                        # Velger prosedyre for henting av kundedata
+        for resultater in spørring.stored_results():
+            svar = resultater.fetchall()                                        # Henter alle resultater fra prosedyren
+        return svar # Returnerer resultatet
     except mysql.connector.Error as err:
-        print(f"Feil ved henting av kunder: {err}")
+        logging.error(f"Feil ved henting av kunder: {err}")                     # Logger feil ved henting av kunder
         return []
 
-def kunder_hent_filter():
+def hent_kunde(kunde_id: int) -> Any:
+    """
+    Funksjon for å hente all info om spesifik kunde fra databasen.
+    Args:
+        kunde_id: int mer enn 0 og maks 10 desimaler
+    Returns:
+        Tuple: (KNr, Fornavn, Etternavn, Adresse, PostNr, Poststed)
+    """
+    if(kunde_id != None):
+        try:
+            databasen = tilkobling_database() # Koble til databasen
+            spørring = databasen.cursor() # Dette er en virituell "markør"
+            spørring.execute(f"SELECT kunde.KNr, kunde.Fornavn, kunde.Etternavn, kunde.Adresse, kunde.PostNr, poststed.Poststed FROM kunde INNER JOIN poststed ON kunde.PostNr = poststed.PostNr WHERE kunde.Knr = {kunde_id} LIMIT 1") # TODO: Stored procedure i stedet for spørring
+            
+            resultat = spørring.fetchone() # Lagrer resultat fra spørring
+            return resultat # Returnerer resultatet
+        except mysql.connector.Error as err:
+            print(f"Feil ved henting av spesifikke kunder: {err}")
+            return []
+    else:
+        print("Ingen kunder valgt.")
+        return []
+
+def hent_kunder_filter()-> list[Any]:
     """
     Funksjon for å hente kunder med filter.
     Returns:
-        List of customers
+        List: med kundedata
     """
     try:
         databasen = tilkobling_database() # Koble til databasen
@@ -208,8 +297,14 @@ def kunder_hent_filter():
         print(f"Feil ved henting av kunder: {err}")
         return []
 
-# Funksjon for å slette spesifikk kunde:
-def kunde_slett(kunde_id: int)-> int:
+def slett_kunde(kunde_id: int)-> int:
+    """
+    Funksjon for å slette en kunde i databasen.
+    Args: 
+        kunde_id: int mer enn 0 og maks 10 desimaler
+    Returns: 
+        kunde_id hvis sletting var vellykket, 0 ellers.
+    """
     if kunde_id != None:
         try:
             databasen = tilkobling_database()                                   # Koble til databasen
@@ -226,70 +321,8 @@ def kunde_slett(kunde_id: int)-> int:
         return kunde_id
     else:
         return 0
-
-
-#Funksjon for å hente spesifikk kundeinfo:
-def hent_spesifikk_kunde(kunde_id):
-    if(kunde_id != None):
-        try:
-            databasen = tilkobling_database() # Koble til databasen
-            spørring = databasen.cursor() # Dette er en virituell "markør"
-            spørring.execute(f"SELECT kunde.KNr, kunde.Fornavn, kunde.Etternavn, kunde.Adresse, kunde.PostNr, poststed.Poststed FROM kunde INNER JOIN poststed ON kunde.PostNr = poststed.PostNr WHERE kunde.Knr = {kunde_id} LIMIT 1") # TODO: Stored procedure i stedet for spørring
-            
-            resultat = spørring.fetchone() # Lagrer resultat fra spørring
-            return resultat # Returnerer resultatet
-        except mysql.connector.Error as err:
-            print(f"Feil ved henting av spesifikke kunder: {err}")
-            return []
-    else:
-        print("Ingen kunder valgt.")
-        return []
     
-def hent_postnr():
-    """
-    Funksjon for å hente postnr fra databasen
-    Returns:
-        List of postnr
-    """
-    try:
-        databasen = tilkobling_database() # Koble til databasen
-        spørring = databasen.cursor() # Dette er en virituell "markør"
-        spørring.execute("SELECT PostNr FROM poststed") # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
-        resultat = spørring.fetchall() # Lagrer resultat fra spørring
-        return [postnr[0] for postnr in resultat] # Returnerer resultatet som liste med bare postnr
-    except mysql.connector.Error as err:
-        print(f"Feil ved henting av postnr: {err}")
-        return []
-
-def kunde_valider_helper(streng: Union[str, int], fra: int, til: int, tall: bool= False, postnr: bool=False)->bool:
-    """
-    Også en funksjon for validering Testing. Dynamisk sjekk om streng stemmer med kravene.
-    Args:
-        streng: Streng for testing
-        fra: Minimum lengde
-        til: Maksimum lengde
-        tall: True hvis int, standard str
-        postnr: True hvis postnr, standard False
-    Returns:
-        Bool
-    """
-    if tall:  
-        if not isinstance(streng, int):
-            return False                                                        
-        return fra < streng < til                                               # returnerer True hvis det er mellom angitt verdi
-    elif postnr:
-        if not streng.isdigit():                                                # Må være kun tall
-            return False
-        return len(streng)==4                                                   # returnerer True hvis det er 4 siffer
-    else:
-        if not isinstance(streng, str):
-            return False 
-        return fra < len(streng) < til 
-    
-tilgjengelige_postnumre: list[str]= hent_postnr()                               # Henter postnr fra databasen denne trengs bare hentes 1 gang.
-
-
-def kunde_oppdater(
+def oppdater_kunde(
         kundenummer: int,
         fornavn: str,
         etternavn: str,
@@ -331,7 +364,8 @@ def kunde_oppdater(
     else:
         raise ValueError("Angitt data er ugyldig")
 
-def kunde_opprett( 
+# Funksjon for å opprette en kunde i databasen.
+def opprett_kunde( 
         fornavn: str, 
         etternavn: str, 
         adresse: str,   
@@ -370,6 +404,55 @@ def kunde_opprett(
     else:
         raise ValueError("Angitt data er ugyldig")
 
+
+## DIVERSE FUNKSJONER:
+# Funksjon for å hente postnr fra databasen:    
+def hent_postnr()-> list[str]:
+    """
+    Funksjon for å hente postnr fra databasen
+    Returns:
+        List of postnr
+    """
+    try:
+        databasen = tilkobling_database()                                       # Koble til databasen
+        spørring = databasen.cursor()                                           # Dette er en virituell "markør"
+        spørring.execute("SELECT PostNr FROM poststed")                         # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
+        resultat: List[Any] = spørring.fetchall()                               # Lagrer resultat fra spørring
+        return [postnr[0] for postnr in resultat]                               # Returnerer resultatet som liste med bare postnr
+    except mysql.connector.Error as err:
+        logging.error(f"Feil ved henting av postnr: {err}")                     # Logger feil ved henting av postnr
+        return []
+
+def kunde_valider_helper(streng: str | int, fra: int, til: int, tall: bool= False, postnr: bool=False)->bool:
+    """
+    Også en funksjon for validering Testing. Dynamisk sjekk om streng stemmer med kravene.
+    Args:
+        streng: Streng å validere
+        fra: Minimum lengde
+        til: Maksimum lengde
+        tall: True hvis int, standard str
+        postnr: True hvis postnr, standard False
+    Returns:
+        Bool
+    """
+    if tall:  
+        if isinstance(streng, int):
+            return fra < streng < til                                           # Returnerer True hvis det er mellom angitt verdi
+        else:
+            return False                                                     
+    elif postnr and isinstance(streng, str):                                    # Hvis det er postnr, og postnr er streng
+        if not streng.isdigit():                                                # Må være kun tall
+            return False
+        return len(streng)==4                                                   # Returnerer True hvis det er 4 siffer i strengen
+    else:
+        if not isinstance(streng, str):
+            return False 
+        return fra < len(streng) < til 
+
+# Forhåndsdefinerte postnr for å unngå å hente dem fra databasen flere ganger.
+tilgjengelige_postnumre: list[str]= []                               # Henter postnr fra databasen denne trengs bare hentes 1 gang.
+
+
 ## Generer faktura database:
 def lagre_faktura(
         faktura_navn: str,
@@ -402,3 +485,10 @@ def lagre_faktura(
             databasen.close()
 
 
+if __name__ == "__main__":
+    logging.debug("Database.py er kjørt som hovedprogram")                      # Logger at database.py er kjørt som hovedprogram
+
+else:                                                                           # Hvis database.py er importert som modul
+    logging.debug("Database.py er importert")
+    tilgjengelige_postnumre = hent_postnr()                                     # Henter postnr fra databasen
+    logging.debug(f"Tilgjengelige postnumre er importert.")                     # Logger tilgjengelige postnr

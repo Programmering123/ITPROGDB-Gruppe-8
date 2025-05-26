@@ -1,5 +1,10 @@
-import customtkinter
+"""
+Tabell.py
+Dette er en klasse for å lage en tabellvisning i et GUI-program.
+Den er laget for å være en baseklasse som kan brukes av andre moduler.
+"""
 from tkinter import ttk
+import customtkinter
 
 class Tabell:
     def __init__(self, master):
@@ -8,10 +13,10 @@ class Tabell:
         self.antall_sider = 1
         self.data = []                                                          # Tom liste. Settes av subklasse.
         self.kolonner = []                                                      # Tom liste. Settes av subklasse.
-        self.detalj_visning_ramme:customtkinter.CTkFrame = None 
-        self.tabell_visning_ramme:customtkinter.CTkFrame = None
-        self.tabell:ttk.Treeview = None                                         # Setter ny tabell til None
-        self.knapp_detaljer:customtkinter.CTkButton = None                      # Gjør knapp tilgjengelig for subklasser  
+        self.detalj_visning_ramme:customtkinter.CTkFrame
+        self.tabell_visning_ramme:customtkinter.CTkFrame
+        self.tabell:ttk.Treeview
+        self.knapp_detaljer:customtkinter.CTkButton
         self.knapp_detaljer_betinget = False                                    # Setter knapp til False, for å sjekke om den er opprettet i subklasse
 
     def vis_innhold(self):
@@ -54,7 +59,6 @@ class Tabell:
         Dette er en tom funksjon som skal overstyres av submoduler.
         Kopier funksjonen til submodulene, fjern kommentering og tilpass den der.
         """
-        pass
 
     def knapp_oppdater_tilstand(self, knapp:customtkinter.CTkButton):
         """
@@ -97,7 +101,7 @@ class Tabell:
         self.meny_ramme.grid_columnconfigure(2, weight=1)                       # Generelt plassopptak weigh=1
         self.meny_ramme.grid_columnconfigure(3, weight=0)                       # Opprett ny kunde
 
-        # Øvre meny, Søkefelt:
+        # Søkefelt:
         self.leteord = customtkinter.CTkEntry(
             master=self.meny_ramme,
             width=300,
@@ -109,18 +113,17 @@ class Tabell:
         self.leteord.grid(row=0, column=0, sticky="nw", padx=10, pady=10)            # Plassering av søkefelt
         self.leteord.bind("<KeyRelease>", lambda event: self.let_i_data(self.leteord.get())) # Binder tastetrykk til søkefunksjonen for live søk
         self.leteord.bind("<Return>", lambda event: self.let_i_data(self.leteord.get()))  # Binder Enter-tasten til søkefunksjonen
-        # Øvre meny, Søkeknapp:
+        # Søkeknapp:
         knapp_søk = customtkinter.CTkButton(
             master=self.meny_ramme,
             text="Søk",
             command=lambda: self.let_i_data(self.leteord.get()), 
         )
         knapp_søk.grid(row=0, column=1, sticky="nw", padx=10, pady=10)          # Plassering av søkeknapp
-        # Øvre meny, valgri filterboks:
-        self.valg_filter_boks()                                                  # Kaller på funksjon for å opprette filterboks
-        # Øvre meny, valgfri vis detaljer:
+        # valgfri filterboks:
+        self.valg_filter_boks()                                                 # Kaller på funksjon for å opprette filterboks
+        # valgfri vis detaljer:
         self.knapp_detaljer_opprett(self.meny_ramme)                            # Oppretter detaljknappen i menyen basert på evt subclass
-
 
     def _opprett_tabell(self):
         """Intern funksjon for å opprette tabellen."""
@@ -225,7 +228,7 @@ class Tabell:
     # Søkefunksjon: 
     def let_i_data(self, sok: str):
         self.vist_data = [
-            rad for rad in self.data if sok.lower() in str(rad).lower() 
+            rad for rad in self.data if sok.lower() in str(rad).lower()
         ]
         self.oppdater_tabell()
     
@@ -251,7 +254,6 @@ class Tabell:
         for rad in self.tabell.get_children():
             self.tabell.delete(rad)
 
-        # Legger til nye rader i tabellen:
         # Beregning av hvilke rader som skal vises basert på aktuell side og antall viste rader:
         fra = (
              int(self.aktuell_side)
@@ -259,6 +261,7 @@ class Tabell:
              -int(self.knapp_antall_var.get())
              )                                                                  # Beregner fra hvilken rad vi skal begynne å vise dataene
         til =  fra + int(self.knapp_antall_var.get())                           # Beregner til hvilken rad vi skal slutte å vise dataene
+        # Legger til nye rader i tabellen:
         for rad in self.vist_data[fra:til]:                                     # Går gjennom dataene tilgjengelig, begrenset til sidevisning
             self.tabell.insert("", "end", values=rad)                           # Legger de inn i tabell
         self.antall_sider = len(self.vist_data) // int(self.knapp_antall_var.get()) + 1     # Beregner antall sider på nytt

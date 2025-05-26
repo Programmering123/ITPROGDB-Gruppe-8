@@ -1,11 +1,6 @@
 * Først må databasen bli opprettet. Antar vi gjør dette i MySQL Workbench. Importer SQL fil varehusDB.sql og kjør denne - Alle tabeller skal dukke opp.
 * Det er mulig å opprette egen bruker til database ved å gå på "Server/Users and Priviledges" Brukernavn og passord må brukes senere.
-* ~~VSCode på ITPROGDB-GRUPPE-8 Opprett en fil som heter .gitignore i rootmappa denne filen bør/kan/skal inneholde: ~~ Virker som .gitignore filen blir syncet.
 
-~~#Ignoreringfiler~~
-~~__pycache__/~~
-~~env/~~
-~~*.env~~
 
 
 * Opprett en fil til som slutter på .env (f.eks. secrets.env ) Her må vi definere variabler som skal bruker i api/database.py - Legger inn mal her, men bruk egne brukernavn/passord.:

@@ -1,10 +1,13 @@
+import logging
+from typing import Any
+from decimal import Decimal
+
 import customtkinter
 from tkinter import ttk
-from api.database import hent_ordrer, hent_spesifikk_ordre, hent_ordrelinjer    # Importerer database funksjoner relatert til ordrer
-from api.database import hent_spesifikk_kunde                                   # Importerer database funksjoner relatert til kunder   
+from api.database import hent_ordrer, hent_ordre, hent_ordrelinjer              # Importerer database funksjoner relatert til ordrer
+from api.database import hent_kunde                                             # Importerer database funksjoner relatert til kunder   
 from moduler.tabell import Tabell                                               # Importer TabellModul fra tabell.py
 from moduler.fakt import generer_faktura                                        # Importer lag_faktura fra fakt.py
-import logging
 
 class Ordrer(Tabell):
     def __init__(self, master):
@@ -16,8 +19,8 @@ class Ordrer(Tabell):
             "Ordre Dato",
             "Betalt Dato",
             "Kunde ID"
-            ] 
-        self.knapp_detaljer_betinget = True    
+            ]
+        self.knapp_detaljer_betinget = True
 
     def hent_data(self):
         return hent_ordrer()                                                    # Overstyrer hent_data() fra TabellModul for å hente ordrer fra databasen
@@ -61,11 +64,11 @@ class Ordrer(Tabell):
         Args:
             ordre (tuple): Informasjon om valgt ordre fra tabell.
         """
-        if ordre != None:
+        if ordre is not None:                                                   # TODO: Hvis header i tabellen blir klikket på så får vi en error her.
             ordre_id, ordre_kunde_id = ordre[0], ordre[4]                       # Henter ordrenummeret og kundenummeret fra den valgte ordren
-            ordredata = hent_spesifikk_ordre(ordre_id)                          # Henter ordredata for den valgte ordren
+            ordredata = hent_ordre(ordre_id)                                    # Henter ordredata for den valgte ordren
             ordrelinjer = hent_ordrelinjer(ordre_id)                            # Henter ordrelinjene for den valgte ordren
-            kundeinfo = hent_spesifikk_kunde(ordre_kunde_id)                    # Henter kundeinfo for den valgte ordren
+            kundeinfo = hent_kunde(ordre_kunde_id)                              # Henter kundeinfo for den valgte ordren
         else:
             logging.warning("Vis detaljer, Ingen ordre valgt")                  # Logger advarsel hvis ingen ordre er valgt
             return False                                                        
@@ -81,7 +84,7 @@ class Ordrer(Tabell):
 
         self.opprett_ordreinfo(ordredata, ordrelinjer)                          # Oppretter ordreinfo i detaljvisningrammen
 
-    def opprett_header(self, ordredata:dict)->bool:
+    def opprett_header(self, ordredata:dict[str, Any])->None:
         """ Funksjon for å opprette headeren for detaljvisningrammen."""
         # Lager en ny ramme for detaljvisning:
         ramme_header = customtkinter.CTkFrame(
@@ -115,11 +118,11 @@ class Ordrer(Tabell):
         knapp_genere_faktura = customtkinter.CTkButton(
             master=ramme_header,
             text="Generer faktura",
-            command=lambda: self.generer_faktura_knapp()
+            command=lambda: generer_faktura(ordredata) # Kaller generer_faktura funksjonen med ordrenummeret
         )
         knapp_genere_faktura.grid(row=2,column=2,sticky="nw", padx=10, pady=10)
 
-    def opprett_kundeinfo(self, kundeinfo:dict)->bool:
+    def opprett_kundeinfo(self, kundeinfo:dict)-> None:
         """ Funksjon for å opprette kundeinfo i detaljvisningrammen."""
         ramme_kundeinfo = customtkinter.CTkFrame(
             master=self.detalj_visning_ramme, 
@@ -128,7 +131,7 @@ class Ordrer(Tabell):
         ramme_kundeinfo.grid(row=1, column=1, sticky="nsew", padx=10, pady=10)
 
 
-        if(kundeinfo != None):                                                  # Sikrer at kundeinfo er
+        if(kundeinfo is not None):                                                  # Sikrer at kundeinfo er
             (
                 kunde_id, 
                 kunde_fornavn, 
@@ -174,7 +177,7 @@ class Ordrer(Tabell):
             )
             label_ingen_kunde.grid(row=0,column=0,sticky="nw", padx=10, pady=10)
 
-    def opprett_ordreinfo(self, ordredata:dict, ordrelinjer:dict)->bool:
+    def opprett_ordreinfo(self, ordredata:dict, ordrelinjer:list[tuple[str, str, int, Decimal]])->None:
         """ Funksjon for å opprette ordreinfo i detaljvisningrammen."""
         # ramme for ordreinfo:
         ramme_ordreinfo = customtkinter.CTkFrame(
@@ -275,68 +278,6 @@ class Ordrer(Tabell):
         else:
             logging.error("Ingen detaljvisningramme tilgjengelig")              # Logger feil hvis detaljvisningrammen ikke kan vises
             return False                                                                
-
-    # def generer_faktura(self): 
-        valgt_ordre = self.tabell.focus()
-        verdier = self.tabell.item(valgt_ordre)["values"]
-        if not verdier:
-            logging.error("Ingen ordre valgt for fakturering")                  # Logger advarsel hvis ingen ordre er valgt
-            return
-
-        ordre_id = verdier[0]
-        kundeinfo = hent_spesifikk_kunde(verdier[4])                            # Hent kundeinfo
-        ordrelinjer = hent_ordrelinjer(ordre_id)                                
-        # Hent ordrelinjer
-
-        # Forbered data for faktura
-        kunde = f"{kundeinfo[1]} {kundeinfo[2]}"
-        adresse = kundeinfo[3]
-        postnummer = kundeinfo[4]
-        poststed = kundeinfo[5]
-        dato = verdier[2]
-        belop = sum(
-            linje[2] * linje[3] 
-            for linje in ordrelinjer
-            )
-        mva = belop / 25
-        total = belop + mva
-        betalingsbetingelser = 14
-        fakturanummer = generer_unikt_fakturanummer(ordrenummer=str(ordre_id), dato=dato)
-        ordrenummer = ordre_id
-        kundenummer = kundeinfo[0]
-        var_referanse = "Varelageret AS"
-        deres_referanse = kunde
-        betalingsinformasjon = "1234.56.78910"
-        kommentar = " "
-        vedlegg = "Ingen"
-
-        # Generer faktura
-        try:
-            lag_faktura(
-                kunde=kunde,
-                adresse=adresse,
-                postnummer=postnummer,
-                poststed=poststed,
-                dato=dato,
-                belop=belop,
-                mva=mva,
-                total=total,
-                betalingsbetingelser=betalingsbetingelser,
-                fakturanummer=fakturanummer,
-                ordrenummer=ordrenummer,
-                kundenummer=kundenummer,
-                var_referanse=var_referanse,
-                deres_referanse=deres_referanse,
-                betalingsinformasjon=betalingsinformasjon,
-                ordrelinjer=ordrelinjer,
-                kommentar=kommentar,
-                vedlegg=vedlegg,
-                unikt_nummer=fakturanummer,
-                filnavn=f"{fakturanummer}.pdf",
-                )
-            print(f"Faktura generert:{fakturanummer}.pdf")
-        except Exception as e:
-            logging.error(f"Feil ved generering av faktura: {e}")
 
     def lukk_detaljer(self):
         if self.detalj_visning_ramme:
