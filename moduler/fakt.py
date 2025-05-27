@@ -1,92 +1,51 @@
 import os
 import datetime
 import logging
+from decimal import Decimal
 from datetime import datetime, timedelta
 from fpdf import FPDF
 from typing import Any
+from random import randint
 from moduler.hjelpere import bruker_varsel
+from CTkMessagebox import CTkMessagebox
 from api.database import lagre_faktura, hent_kunde, hent_ordrelinjer
 
 def generer_faktura(ordredata: dict[str, Any]) -> None:
 
         ordre_id = ordredata['OrdreNr']
-        kundeinfo = hent_kunde(ordredata['KNr'])                                #henter kundeinfo
-        ordrelinjer = hent_ordrelinjer(ordre_id)                                #henter ordrelinjer
+        kundeinfo = hent_kunde(ordredata['KNr'])                                # Henter kundeinfo
+        ordrelinjer = hent_ordrelinjer(ordre_id)                                # Henter ordrelinjer
+        
+        belop = sum(linje[2] * linje[3] for linje in ordrelinjer)               # Beregner totalbeløp eks. mva
+        #   Forbereder data for faktura i en Dictionary:
+        fakturadata:dict[str, Any] = {
+            'kunde_nr': kundeinfo['KNr'],
+            'kunde_navn': f"{kundeinfo['Fornavn']} {kundeinfo['Etternavn']}",
+            'adresse': kundeinfo['Adresse'],
+            'postnummer': kundeinfo['PostNr'],
+            'poststed': kundeinfo['Poststed'],
+            'ordre_id': ordre_id,
+            'ordre_dato': ordredata['OrdreDato'],
+            'ordrelinjer': ordrelinjer,
+            'dato': str(ordredata['OrdreDato']),
+            'fakturanummer': str(ordredata['OrdreNr'])+"-"
+            +str(randint(100000, 999999)),                                      # Bruker ordrenummer med tilfeldig tall for å lage unikt fakturanummer
+            'belop': belop,           
+            'mva': belop  * Decimal(0.25),                                      # MVA-beløp (25% av beløp)   
+            'total': int(belop) * Decimal(1.25),                                # Totalbeløp inkl. mva
+            'betalingsbetingelser': 14,  
+            'var_referanse': "Varelageret AS",
+            'deres_referanse': f"{kundeinfo['Fornavn']} {kundeinfo['Etternavn']}",
+            'betalingsinformasjon': "1234.56.78910"                             # Eksempel på kontonummer
+        }
 
-        #forbereder innhold for faktura
-        (kunde_nr, fornavn, etternavn, adresse, postnummer, poststed) = kundeinfo
-        kunde = fornavn + " " + etternavn
-        dato = str(ordredata['OrdreDato'])
-        belop = sum(
-            linje[2] * linje[3] 
-            for linje in ordrelinjer
-            )
-        mva = belop / 25
-        total = int(belop) + int(mva)
-        betalingsbetingelser = 14
-        fakturanummer = generer_unikt_fakturanummer(ordrenummer=str(ordre_id), dato=dato)
-        ordrenummer = ordre_id
-        kundenummer = kundeinfo[0]
-        var_referanse = "Varelageret AS"
-        deres_referanse = kunde
-        betalingsinformasjon = "1234.56.78910"
-        kommentar = " "
-        vedlegg = "Ingen"
-
-        # Generer faktura
         try:
-            lag_faktura(
-                kunde=kunde,
-                adresse=adresse,
-                postnummer=postnummer,
-                poststed=poststed,
-                dato=dato,
-                belop=float(belop),
-                mva=float(mva),
-                total=total,
-                betalingsbetingelser=betalingsbetingelser,
-                fakturanummer=fakturanummer,
-                ordrenummer=ordrenummer,
-                kundenummer=kundenummer,
-                var_referanse=var_referanse,
-                deres_referanse=deres_referanse,
-                betalingsinformasjon=betalingsinformasjon,
-                ordrelinjer=ordrelinjer,
-                kommentar=kommentar,
-                vedlegg=vedlegg,
-                unikt_nummer=fakturanummer,
-                filnavn=f"{fakturanummer}.pdf",
-                )
-            print(f"Faktura generert:{fakturanummer}.pdf")
+            lag_faktura(fakturadata)
         except Exception as e:
             logging.error(f"Feil ved generering av faktura: {e}")
 
-def generer_unikt_fakturanummer(ordrenummer: str, dato: str) -> str:
-    """Genererer et unikt fakturanummer basert på dato og tid."""
-    tidstempel = datetime.now().strftime("%Y%m%d%H%M%S")                        # ÅÅÅÅMMDDHHMMSS
-    dato_renset = dato.replace("-", "")                                         # Fjern bindestreker fra dato
-    return f"{ordrenummer}-{dato_renset}{tidstempel[:6]}" 
-
 def lag_faktura(
-    kunde: str,
-    adresse: str,
-    postnummer: float,
-    poststed: str,
-    dato: str,
-    belop: float,
-    mva: float,
-    total: float,
-    betalingsbetingelser: int,
-    fakturanummer: str,
-    ordrenummer: str,
-    kundenummer: str,
-    var_referanse: str,
-    deres_referanse: str,
-    betalingsinformasjon: str,
-    ordrelinjer: list,
-    unikt_nummer: str,
-    kommentar: str,
-    vedlegg: str,
+    fd: dict[str, Any],
     filnavn: str = "faktura.pdf"
 ) -> None:
     """
@@ -94,37 +53,24 @@ def lag_faktura(
     Returns:
         None
     Args:
-        kunde (str): Navn på kunden.
-        adresse (str): Adresse til kunden.
-        postnummer (float): Postnummer til kunden.
-        poststed (str): Poststed til kunden.
-        dato (str): Fakturadato i formatet "YYYY-MM-DD".
-        belop (float): Beløp eks. mva.
-        mva (float): MVA-beløp.
-        total (float): Totalt beløp inkl. mva.
-        betalingsbetingelser (int): Antall dager for betalingsbetingelser.
-        fakturanummer (str): Fakturanummer.
-        ordrenummer (str): Ordrenummer.
-        kundenummer (str): Kundenummer.
-        var_referanse (str): Vår referanse.
-        deres_referanse (str): Deres referanse.
-        betalingsinformasjon (str): Betalingsinformasjon.
-        ordrelinjer (list): Liste med ordrelinjer, hver linje er en liste med varenr, beskrivelse, antall og pris.
+        fd (dict): En ordbok som inneholder fakturadetaljer som kunde, adresse, postnummer, poststed, ordrenummer,
+                   fakturanummer, betalingsbetingelser, betalingsinformasjon, deres referanse, var referanse,
+                   fakturadato og ordrelinjer.
+        filnavn (str): Navnet på filen som skal lagres. Standard er "faktura.pdf".
     """
     #beregner forfallsdato
-    fakturadato = datetime.strptime(dato, "%Y-%m-%d")                           # Konverter dato til datetime-objekt
-    forfallsdato = fakturadato + timedelta(days=betalingsbetingelser)           # Legg til antall dager
-    forfallsdato_str = forfallsdato.strftime("%Y-%m-%d")                        # Konverter tilbake til streng
+    fd['fakturadato'] = datetime.strptime(fd['dato'], "%Y-%m-%d")               # Konverter dato til datetime-objekt
+    fd['forfallsdato'] = fd['fakturadato'] + timedelta(days=fd['betalingsbetingelser'])     # Legg til antall dager
+    fd['forfallsdato_str'] = fd['forfallsdato'].strftime("%Y-%m-%d")            # Konverter tilbake til streng
 
-    fakturadato_str = fakturadato.strftime("%d.%m.%Y")                          #konverterer dato fra YYYY.MM.DD til dd.mm.yyyy
-    forfallsdato_str = forfallsdato.strftime("%d.%m.%Y")                        #konverterer dato fra YYYY.MM.DD til dd.mm.yyyy
+    fd['fakturadato_str'] = fd['fakturadato'].strftime("%d.%m.%Y")              # Konverterer dato fra YYYY.MM.DD til dd.mm.yyyy
+    fd['forfallsdato_str'] = fd['forfallsdato'].strftime("%d.%m.%Y")            # Konverterer dato fra YYYY.MM.DD til dd.mm.yyyy
 
     faktura_mappe = "fakturaer"
     if not os.path.exists(faktura_mappe):
         os.makedirs(faktura_mappe)
 
-    filsti = os.path.join(faktura_mappe, f"{fakturanummer}.pdf")
-    print(f"Fakturamappe: {faktura_mappe}")
+    filsti = os.path.join(faktura_mappe, f"{fd['fakturanummer']}.pdf")
 
     pdf = FPDF(format='A4')
     pdf.w = 210 
@@ -134,19 +80,18 @@ def lag_faktura(
     pdf.set_font('DejaVu', size=10)
     pdf.cell
     pdf.add_page()
-    #legger inn logoen
+    # Legger inn logoen
     logo_bredde = 30
     logo_hoyde = 30
-    pdf.image("assets/logo.png", x=10, y=10, w=logo_bredde, h=logo_hoyde)       #plasserer logoen i øverste venstre hjørne av siden
-    unikt_nummer = generer_unikt_fakturanummer(ordrenummer, dato)
+    pdf.image("assets/logo.png", x=10, y=10, w=logo_bredde, h=logo_hoyde)       # Plasserer logoen i øverste venstre hjørne av siden
 
-    #legger til det unike nummeret i PDF-en øverst, i senter av fakturaen
-    pdf.cell(190, 10, txt=f"Fakturanummer: {unikt_nummer}", ln=True, align="C")
+    # Legger til det unike nummeret i PDF-en øverst, i senter av fakturaen
+    pdf.cell(190, 10, txt=f"Fakturanummer: {fd['fakturanummer']}", ln=True, align="C")
    
     #plassering av fakuraoverskrift og infofelt(kundeopplysninger, til venstre)
     x = pdf.w - 60
     y = 10
-    pdf.w - logo_bredde - 20
+    # pdf.w - logo_bredde - 20
     hoyde = 60
     
     
@@ -155,15 +100,15 @@ def lag_faktura(
     pdf.cell(pdf.w - 10, 5, txt="Faktura", ln=True, align="L")
     pdf.set_xy(x + 2, y + 10)
     pdf.set_font("DejaVu", size=8)
-    pdf.cell(pdf.w - 10, 5, txt="Fakt.nr.: {}".format(unikt_nummer), ln=True, align="L")
+    pdf.cell(pdf.w - 10, 5, txt="Fakt.nr.: {}".format(fd['fakturanummer']), ln=True, align="L")
     infofelt1 = [
-        "Ordrenummer: {}".format(ordrenummer),
-        "Kundenummer: {}".format(kundenummer),
-        "Deres ref: {}".format(deres_referanse),
-        "Vår ref: {}".format(var_referanse),
-        "Kontonr.:{}".format(betalingsinformasjon),
-        "Fakturadato: {}".format(fakturadato_str),
-        "Forfallsdato: {}".format(forfallsdato_str),
+        "Ordrenummer: {}".format(fd['ordre_id']),
+        "Kundenummer: {}".format(fd['kunde_nr']),
+        "Deres ref: {}".format(fd['deres_referanse']),
+        "Vår ref: {}".format(fd['var_referanse']),
+        "Kontonr.:{}".format(fd['betalingsinformasjon']),
+        "Fakturadato: {}".format(fd['fakturadato_str']),
+        "Forfallsdato: {}".format(fd['forfallsdato_str']),
     ]
     for linje in infofelt1:
         pdf.set_x(x + 2)
@@ -179,10 +124,10 @@ def lag_faktura(
     pdf.cell(pdf.w, 10, txt="Fakturamottaker:", ln=True, align="L")
     
     infofelt2 = [
-        "{}".format(kunde),                                                     #navn på kunden
-        "{}".format(adresse),                                                   #adresse til kunden         
-        "{}".format(postnummer),                                                #postnummer til kunden    
-        "{}".format(poststed),                                                  #poststed til kunden
+        "{}".format(fd['kunde_navn']),                                          # Navn på kunden
+        "{}".format(fd['adresse']),                                             # Adresse til kunden         
+        "{}".format(fd['postnummer']),                                          # Postnummer til kunden    
+        "{}".format(fd['poststed']),                                            # Poststed til kunden
     ]
 
     for linje in infofelt2:
@@ -191,7 +136,7 @@ def lag_faktura(
         
     #overskrift før tabell, ordreoversikt
     pdf.ln(10)
-    pdf.cell(pdf.w, 10, txt="Fakturaoversikt for gjeldende ordre", ln=True, align="C"),
+    pdf.cell(pdf.w, 10, txt="Fakturaoversikt for gjeldende ordre", ln=True, align="C")
     pdf.set_font("DejaVu", size=10, style="B")  
  
 
@@ -206,16 +151,14 @@ def lag_faktura(
     
     #tabellinnhold, ordrelinjer
     #sjekker om ordrelinjer er tom eller har feil struktur
-    if not ordrelinjer or not all(len(linje) == 4 for linje in ordrelinjer):
+    if not fd['ordrelinjer'] or not all(len(linje) == 4 for linje in fd['ordrelinjer']):
         pdf.cell(
             pdf.w - 10, 10, txt="Ingen ordrelinjer tilgjengelig eller feil struktur.",
             ln=True, align="L")
     else:
-        for linje in ordrelinjer:
-            print("Linje:", linje, "Lengde:", len(linje))
+        for linje in fd['ordrelinjer']:
             try:
                 varenr, beskrivelse, antall, pris = linje
-                print(f"Varenr: {varenr}, Beskrivelse: {beskrivelse}, Antall: {antall}, Pris: {pris}")
                 antall = int(antall)
                 pris = float(pris)
                 totalpris = antall * pris
@@ -228,7 +171,7 @@ def lag_faktura(
                 pdf.cell(30, 10, txt=f"{totalpris:.2f} NOK", border=1, align="R")
                 pdf.ln()
             except (IndexError, ValueError) as e:
-                print(f"Feil i ordrelinje: {linje}. Feilmelding: {e}")
+                logging.error(f"Feil i ordrelinje: {linje}. Feilmelding: {e}")
                 pdf.cell(pdf.w - 10, 10, txt="Feil i ordrelinje.", ln=True, align="L")
     
     
@@ -240,9 +183,9 @@ def lag_faktura(
     
     pdf.rect(x, y, bredde, hoyde)
     summer = [
-        "Eks. mva: {:.2f}".format(belop),
-        "MVA: {:.2f}".format(mva),
-        "Totalt inkl. mva: {:.2f}".format(total)
+        "Eks. MVA: {:.2f}".format(fd['belop']),
+        "MVA: {:.2f}".format(fd['mva']),
+        "Totalt inkl. MVA: {:.2f}".format(fd['total'])
     ]
 
     pdf.set_xy(x, y + 2)
@@ -255,20 +198,30 @@ def lag_faktura(
     pdf.cell(pdf.w - 10, 10, txt="", ln=True)
     pdf.cell(pdf.w - 10, 10, txt="Takk for handelen!", ln=True, align="C")
     pdf.cell(pdf.w - 10, 10, txt="Vennligst betal innen 14 dager.", ln=True, align="C")
-    pdf.cell(pdf.w - 10, 10, txt="Oppgi ordrenummer ved betaling:" \
-             "{}".format(ordrenummer),ln=True, align="C")
+    pdf.cell(pdf.w - 10, 10, txt="Oppgi ordrenummer ved betaling: " \
+             "{}".format(fd['ordre_id']),ln=True, align="C")
     pdf.cell(pdf.w - 10, 10, txt="Betal til:" \
-    " {}".format(betalingsinformasjon), ln=True, align="C")
+    " {}".format(fd['betalingsinformasjon']), ln=True, align="C")
     pdf.cell(pdf.w - 10, 10, txt="Vennligst kontakt oss ved spørsmål.", ln=True, align="C")
 
 
     pdf.output(filsti)
-    if lagre_faktura(fakturanummer, forfallsdato, fakturadato, ordrenummer):
-        bruker_varsel(
-            melding="Faktura er lagret i databasen.",
-            icon="check"
+    if lagre_faktura(fd['fakturanummer'], str(fd['forfallsdato']), str(fd['fakturadato']), fd['ordre_id']):
+        bekreft = CTkMessagebox(
+            title="Faktura lagret",
+            message=f"Faktura {fd['fakturanummer']} er lagret fakturamappe og i databasen.\n Ønsker du å åpne den?",
+            icon="check",
+            option_1="OK",
+            option_2="Lukk"
         )
-
-    print (ordrelinjer)
+        if bekreft.get() == "OK":                                               # Hvis bruker velger OK, åpner vi fakturaen i standard PDF-leser
+            os.startfile(filsti)
+    else:
+        logging.error(f"Kunne ikke lagre faktura {fd['fakturanummer']} i databasen.")
+        bruker_varsel(
+            melding="Kunne ikke lagre faktura i databasen.\
+                  Kontakt systemadministrator.",
+            icon="warning"
+        )
 
 

@@ -82,7 +82,7 @@ class Ordrer(Tabell):
         self.opprett_header(ordredata)                                          # Oppretter headeren for detaljvisningrammen     
         # Kundeinfo: 
         self.opprett_kundeinfo(kundeinfo)                                       # Oppretter kundeinfo og ordrelinjer i detaljvisningrammen
-
+        # Ordreinfo:
         self.opprett_ordreinfo(ordredata, ordrelinjer)                          # Oppretter ordreinfo i detaljvisningrammen
 
     def opprett_header(self, ordredata:dict[str, Any])->None:
@@ -123,7 +123,7 @@ class Ordrer(Tabell):
         )
         knapp_genere_faktura.grid(row=2,column=2,sticky="nw", padx=10, pady=10)
 
-    def opprett_kundeinfo(self, kundeinfo:dict)-> None:
+    def opprett_kundeinfo(self, kundeinfo:dict[str, Any])-> None:
         """ Funksjon for å opprette kundeinfo i detaljvisningrammen."""
         ramme_kundeinfo = customtkinter.CTkFrame(
             master=self.detalj_visning_ramme, 
@@ -131,52 +131,47 @@ class Ordrer(Tabell):
             )
         ramme_kundeinfo.grid(row=1, column=1, sticky="nsew", padx=10, pady=10)
 
-
-        if(kundeinfo is not None):                                                  # Sikrer at kundeinfo er
-            (
-                kunde_id, 
-                kunde_fornavn, 
-                kunde_etternavn, 
-                kunde_adresse, 
-                kunde_postnr, 
-                kunde_poststed
-            ) = kundeinfo                                                       # Setter kundeinfo til variabler
-
-            # label for kunde_id:
-            label_kunde_id = customtkinter.CTkLabel(
-                master=ramme_kundeinfo,
-                text=f"Kunde ID: {kunde_id}",
-            #   font=("Arial", 16, "bold"),
-            )
-            label_kunde_id.grid(row=0,column=0,sticky="nw", padx=10, pady=10)
-            # label for kundenavn:
-            label_kundenavn = customtkinter.CTkLabel(
-                master=ramme_kundeinfo,
-                text=f"Kunde: {kunde_fornavn} {kunde_etternavn}",
-            #    font=("Arial", 16, "bold"),
-            )
-            label_kundenavn.grid(row=1,column=0,sticky="nw", padx=10, pady=10)
-            # label for kundeadresse:
-            label_kundeadresse = customtkinter.CTkLabel(
-                master=ramme_kundeinfo,
-                text=f"Adresse: {kunde_adresse}",
-            #    font=("Arial", 16, "bold"),
-            )
-            label_kundeadresse.grid(row=2,column=0,sticky="nw", padx=10, pady=10)
-            # label for kundepostnr og poststed:
-            label_kundepostnr = customtkinter.CTkLabel(
-                master=ramme_kundeinfo,
-                text=f"Postnummer: {kunde_postnr} {kunde_poststed}",
-            #    font=("Arial", 16, "bold"),
-            )
-            label_kundepostnr.grid(row=3,column=0,sticky="nw", padx=10, pady=10)
-        else:
+        if not kundeinfo:                                                       # Sjekker om kundeinfo er tom
+            logging.warning("Ingen kundeinfo tilgjengelig for denne ordren")    # Logger advarsel hvis ingen kundeinfo er tilgjengelig
             label_ingen_kunde = customtkinter.CTkLabel(
                 master=ramme_kundeinfo,
                 text="Kundeinfo ikke tilgjengelig",
-            #    font=("Arial", 16, "bold"),
             )
             label_ingen_kunde.grid(row=0,column=0,sticky="nw", padx=10, pady=10)
+            return                                                              # Avslutter funksjonen hvis ingen kundeinfo er tilgjengelig
+        if(kundeinfo is not None):                                              # Sikrer at kundeinfo er
+            kunde_id = kundeinfo.get("KNr", "Ikke tilgjengelig")                # Henter kunde ID fra kundeinfo, hvis ikke tilgjengelig vises "Ikke tilgjengelig"
+            kunde_fornavn = kundeinfo.get("Fornavn", "Ikke tilgjengelig")       # Henter fornavn fra kundeinfo, hvis ikke tilgjengelig vises "Ikke tilgjengelig" 
+            kunde_etternavn = kundeinfo.get("Etternavn", "Ikke tilgjengelig")   # Henter etternavn fra kundeinfo, hvis ikke tilgjengelig vises "Ikke tilgjengelig"
+            kunde_adresse = kundeinfo.get("Adresse", "Ikke tilgjengelig")       # Henter adresse fra kundeinfo, hvis ikke tilgjengelig vises "Ikke tilgjengelig"
+            kunde_postnr = kundeinfo.get("PostNr", "Ikke tilgjengelig")         # Henter postnummer fra kundeinfo, hvis ikke tilgjengelig vises "Ikke tilgjengelig"
+            kunde_poststed = kundeinfo.get("Poststed", "Ikke tilgjengelig")     # Henter poststed fra kundeinfo, hvis ikke tilgjengelig vises "Ikke tilgjengelig"
+        logging.debug(f"Kundeinfo hentet: {kundeinfo}")                     # Logger at kundeinfo er hentet
+
+        # label for kunde_id:
+        label_kunde_id = customtkinter.CTkLabel(
+            master=ramme_kundeinfo,
+            text=f"Kunde ID: {kunde_id}"  # Henter kunde ID fra kundeinfo, hvis ikke tilgjengelig vises "Ikke tilgjengelig"
+        )
+        label_kunde_id.grid(row=0,column=0,sticky="nw", padx=10, pady=10)
+        # label for kundenavn:
+        label_kundenavn = customtkinter.CTkLabel(
+            master=ramme_kundeinfo,
+            text=f"Kunde: {kunde_fornavn} {kunde_etternavn}",
+        )
+        label_kundenavn.grid(row=1,column=0,sticky="nw", padx=10, pady=10)
+        # label for kundeadresse:
+        label_kundeadresse = customtkinter.CTkLabel(
+            master=ramme_kundeinfo,
+            text=f"Adresse: {kunde_adresse}",
+        )
+        label_kundeadresse.grid(row=2,column=0,sticky="nw", padx=10, pady=10)
+        # label for kundepostnr og poststed:
+        label_kundepostnr = customtkinter.CTkLabel(
+            master=ramme_kundeinfo,
+            text=f"Postnummer: {kunde_postnr} {kunde_poststed}",
+        )
+        label_kundepostnr.grid(row=3,column=0,sticky="nw", padx=10, pady=10)
 
     def opprett_ordreinfo(self, ordredata:dict, ordrelinjer:list[tuple[str, str, int, Decimal]])->None:
         """ Funksjon for å opprette ordreinfo i detaljvisningrammen."""
