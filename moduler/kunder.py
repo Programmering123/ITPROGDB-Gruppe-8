@@ -95,9 +95,6 @@ class Kunder(Tabell):
         """
         if len(kundedata) != 0 and isinstance(kundedata, list):                 # Sjekker om kundedata er en liste og ikke tom
             self.kundenummer, fornavn, etternavn, adresse, postnr = kundedata   # Legger dataen til passende variabler
-        else: 
-            bruker_varsel("Ingen kunde er valgt", "warning")                    # Viser varsel til bruker om at ingen kundedata er sendt inn
-            return False
 
         if not self.vis_detalj_ramme():
             bruker_varsel("Feil ved oppretting av detaljvisningramme", "error") # Viser feilmelding til bruker
@@ -313,7 +310,7 @@ class Kunder(Tabell):
             logging.info(f"Avbrutt sletting av kunde {self.kundenummer}")
             return False                                                        # Avbryter sletting av kunde hvis bruker trykker nei.
         if self.kundenummer == None:                                            # Sjekker om kundenummer er None
-            logging.warning("Ingen kundenummer valgt for sletting")                   # Logger at ingen kunde er valgt for sletting
+            logging.warning("Ingen kundenummer valgt for sletting")             # Logger at ingen kunde er valgt for sletting
             bruker_varsel("Ingen kunde valgt", "error")                         # Viser varsel til bruker om at ingen kunde er valgt
             return False  
         try:       

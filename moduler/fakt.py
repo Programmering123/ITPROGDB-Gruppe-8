@@ -91,7 +91,6 @@ def lag_faktura(
     #plassering av fakuraoverskrift og infofelt(kundeopplysninger, til venstre)
     x = pdf.w - 60
     y = 10
-    # pdf.w - logo_bredde - 20
     hoyde = 60
     
     

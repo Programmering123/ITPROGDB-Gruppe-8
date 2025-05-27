@@ -47,11 +47,15 @@ Dette prosjektet har som mål å utvikle en brukervennlig GUI-applikasjon for å
 
 ## 📂 Oppsett
 
+
+
 # Autokonfigurasjon:
 "assets/varehusdb.sql" Må være kjørt på lokal database
 Anbefales å opprette egen bruker/passord
 kjør "init.py" i python f eks. "py.exe init.py" følg instrukser
 kjør "pip install -r requirements.txt"
+
+# Manuell oppsett
 
 
 # Starte Virtual Environment, kjør disse kommandoene: 
