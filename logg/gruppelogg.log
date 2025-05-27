@@ -11,8 +11,8 @@ Begynte å opprette GUI i app.py basert på custumktinker.
 Kommentert litt kode i app.py og diskutert litt rundt GUI. 
 
 09.04.2025 20:00-20:30
-Vi legger inn TODO tree Extension i VSCode for å ha oversikt over hva som må gjøres hvor..  https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree 
-
+Vi legger inn TODO tree Extension i VSCode for å ha oversikt over hva som må gjøres hvor..  
+https://marketplace.visualstudio.com/items?itemName=Gruntfuggly.todo-tree 
 
 
 23.04.2025 20:00-20:30
@@ -42,3 +42,11 @@ Sammenfattet diverse endringer, inkludert oppdatering av GUI og forbedring av br
 Implementert ny funksjon for håndtering av brukerinnstillinger i app.py. 
 Refaktorert koden for bedre lesbarhet og vedlikeholdbarhet.  
 Oppdatert fremdriftsplanen på GitHub og diskutert videre oppgaver for gruppen.
+
+26.05.2025 20:00-22:00
+Gjennomgått endringer i moudulene + liveendringer. Testet programmets totale 
+funksjonalitet, fra å legge inn DB på nytt i MYSQL, og kjøre init.py som første steg.
+Diskutert hvordan vi kan forbedre ytelsen og optimalisere koden ytterligere.
+Fordelt oppgaver for å lande prosjektet, både i rydding av kode og fylle inn 
+tekst i dokumentasjon/rapport. Påbegynne gruppelogg, men samarbeid fortsetter fra
+torsdag 29.05.2025, dette inkluderer også grupperefleksjon.
