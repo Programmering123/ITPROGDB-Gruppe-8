@@ -9,19 +9,16 @@ Den inneholder også funksjoner for å oppdatere og opprette kunder, samt slette
 Den inneholder også en funksjon for å lagre fakturaer i databasen.
 Den inneholder også en funksjon for å validere inndata.
 """
-from typing import Dict, Any, Optional, Union, List
-from decimal import Decimal
+from typing import Dict, Any, List
 import mysql.connector  
-from dotenv import load_dotenv, dotenv_values
+from dotenv import load_dotenv
 import os
 from pathlib import Path
-import decimal
+from decimal import Decimal
 import logging
 # Henter variabler fra .env filen
 dotenv_path = Path('secrets.env')
 load_dotenv(dotenv_path=dotenv_path)
-
-# Setter opp variabler fra .env fil, tilpasset hver unike database.
 
 logging.basicConfig(
     filename='./logg/log.txt',                                                  # Filnavn for loggfilen
@@ -92,7 +89,7 @@ def hent_ordre(ordre_id: int) -> Dict[str, Any]:
         try:
             databasen = tilkobling_database() 
             spørring = databasen.cursor(dictionary=True)                        # Setter spørring til å returnere dictionary
-            spørring.execute(f"""
+            sql_kommando = """
                 SELECT 
                     OrdreNr,
                     OrdreDato,
@@ -100,8 +97,10 @@ def hent_ordre(ordre_id: int) -> Dict[str, Any]:
                     BetaltDato,
                     KNr 
                 FROM ordre 
-                WHERE OrdreNr = {ordre_id}
-                """)                                                            # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare schemaet.
+                WHERE OrdreNr = %s
+                LIMIT 1;
+            """                                                                 # SQL spørring for å hente spesifik ordre
+            spørring.execute(sql_kommando, (ordre_id,))                         # Utfører spørring med ordre_id som parameter
             resultat = spørring.fetchone()                                      # Lagrer resultat fra spørring, kun en linje
             if isinstance(resultat, dict):                                      # Sjekker om resultatet er en dict
                 return resultat                         
@@ -134,7 +133,7 @@ def hent_ordrelinjer(ordre_id: int)-> list[Any]:
     try:
         databasen = tilkobling_database()                                       # Koble til databasen
         spørring = databasen.cursor()                                           # Dette er en virituell "markør"
-        spørring.execute(f"""
+        sql_kommando ="""
             SELECT 
                 ordrelinje.VNr,
                 Betegnelse,
@@ -142,9 +141,10 @@ def hent_ordrelinjer(ordre_id: int)-> list[Any]:
                 PrisPrEnhet
             FROM varehusdb.ordrelinje 
             INNER JOIN vare ON ordrelinje.VNr = vare.VNr 
-            WHERE OrdreNr = {ordre_id} 
+            WHERE OrdreNr = %s 
             LIMIT 1000;
-            """)                                                                # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare tabellen.
+            """                                                                 # Henter alle(begrenset til 1000) rader fra definerte kolonner i vare tabellen.
+        spørring.execute(sql_kommando, (ordre_id,))                             # Utfører spørring med ordre_id som parameter
         resultat = spørring.fetchall()                                          # Lagrer resultat fra spørring
         if isinstance(resultat, list) and resultat:
             # Sjekker om resultatet er en liste og ikke tom
@@ -166,12 +166,12 @@ def hent_ordrelinjer(ordre_id: int)-> list[Any]:
 # Funksjon for å hente varelageret:
 def hent_varelager():
     try:
-        databasen = tilkobling_database() # Koble til databasen
-        spørring = databasen.cursor() # Dette er en virituell "markør"
-        spørring.callproc('hent_varelager') # Velger prosedyre for henting av varelager
+        databasen = tilkobling_database()                                       # Koble til databasen
+        spørring = databasen.cursor()                                           # Dette er en virituell "markør"
+        spørring.callproc('hent_varelager')                                     # Velger prosedyre for henting av varelager
         for resultater in spørring.stored_results():    
-            svar = resultater.fetchall() # Henter alle resultater fra prosedyren
-        return svar # Returnerer resultatet
+            svar = resultater.fetchall()                                        # Henter alle resultater fra prosedyren
+        return svar                                                             # Returnerer resultatet
     except mysql.connector.Error as err:
         logging.error(f"Feil ved henting av varelager: {err}")  
         return []
@@ -180,72 +180,48 @@ def hent_varelager():
 def hent_varer():
     """ Funksjon for å hente varer fra databasen som en liste med dictionaries.
     Denne er kun for brukt til API-en, og ikke for GUI-en.
+
     Returns:
         List[Dict[str, Union[int, str, float]]]: Liste med dictionaries som inneholder varer.
     """
     databasen = None
-    spørring = None
+    cursor = None 
     try:
-        databasen = tilkobling_database()
+        databasen = tilkobling_database() # Bruker din eksisterende tilkoblingsfunksjon
         if not databasen or not databasen.is_connected():
             logging.error("Feil: Kunne ikke koble til database eller ugyldig forbindelse.")
-            return []                                                           # Returner tom liste hvis ingen gyldig tilkobling
+            return []
 
-        spørring = databasen.cursor()
-        sql_query = "SELECT VNr, Betegnelse, Antall, Pris FROM vare LIMIT 1000"
-        kolonnenavn_for_zip = ["VNr", "Betegnelse", "Antall", "Pris"]           # Kolonnenavn for å lage dict med zip
-        spørring.execute(sql_query)
-        hentet_tuples = spørring.fetchall()
-        
-        # Lager dict-liste fra tuples, basert på kolonnenavn:
-        resultat_liste_med_dicts = [dict(zip(kolonnenavn_for_zip, rad)) for rad in hentet_tuples]
-        
-        # iterer gjennom listen og konverter Pris og Antall
-        for vare_dict in resultat_liste_med_dicts:
-            # Konverter Pris
-            if 'Pris' in vare_dict and vare_dict['Pris'] is not None:
-                if isinstance(vare_dict['Pris'], decimal.Decimal):
-                    vare_dict['Pris'] = float(vare_dict['Pris'])
-                else:
-                    try: # Hvis det allerede er en streng eller et annet tallformat
-                        vare_dict['Pris'] = float(vare_dict['Pris'])
-                    except (ValueError, TypeError):
-                        logging.warning(f"Advarsel: Kunne ikke konvertere Pris '{vare_dict['Pris']}' til float for VNr '{vare_dict.get('VNr')}'. Setter til None.")
-                        vare_dict['Pris'] = None # Eller en annen feilhåndtering
-            
-            # Sikre at Antall er int (bør være det fra databasen hvis kolonnen er INT)
-            if 'Antall' in vare_dict and vare_dict['Antall'] is not None:
-                if isinstance(vare_dict['Antall'], decimal.Decimal): # I tilfelle Antall også er Decimal
-                    vare_dict['Antall'] = int(vare_dict['Antall'])
-                else:
-                    try:
-                        vare_dict['Antall'] = int(vare_dict['Antall'])
-                    except (ValueError, TypeError):
-                        logging.warning(f"Advarsel: Kunne ikke konvertere Antall '{vare_dict['Antall']}' til int for VNr '{vare_dict.get('VNr')}'. Setter til None.")
-                        vare_dict['Antall'] = None 
-        
-        return resultat_liste_med_dicts
+        # Opprett cursor med dictionary=True
+        cursor = databasen.cursor(dictionary=True)
+        sql_kommando = """
+        SELECT 
+            VNr,
+            Betegnelse,
+            Antall,
+            Pris
+        FROM vare 
+        LIMIT 1000 
+        """
+        cursor.execute(sql_kommando)
+        resultat:Any = cursor.fetchall() # Dette er nå direkte en liste med dicts
+        # Konverter Decimal til float og sikre int for Antall (hvis nødvendig):
+        for vare_dict in resultat:
+            if 'Pris' in vare_dict and isinstance(vare_dict['Pris'], Decimal):
+                vare_dict['Pris'] = float(vare_dict['Pris'])
 
-    except mysql.connector.Error as db_err:
-        logging.error(f"Databasefeil ved henting av varer: {db_err}")
-        print(f"Databasefeil ved henting av varer: {db_err}")
+        logging.debug(f"{len(resultat)} varer hentet fra databasen som dictionaries.")
+        return resultat
+
+    except mysql.connector.Error as err: 
+        logging.error(f"Databasefeil under henting av varer: {err}")
         return []
     except Exception as e:
-        # Fang andre uventede feil
-        logging.error(f"Uventet feil ved henting av varer: {type(e).__name__} - {e}")
+        logging.error(f"En uventet feil oppstod under henting av varer: {e}")
         return []
     finally:
-        # Sørg for å lukke cursor og tilkobling
-        if spørring:
-            try:
-                spørring.close()
-            except Exception as e_cursor:
-                logging.error(f"Feil ved lukking av cursor: {e_cursor}")
-        if databasen and databasen.is_connected():
-            try:
-                databasen.close()
-            except Exception as e_db:
-                logging.error(f"Feil ved lukking av database: {e_db}")
+        cursor.close() if cursor else None
+        databasen.close() if databasen and databasen.is_connected() else None
 
 
 ## KUNDERHÅNDTERING:
@@ -279,7 +255,20 @@ def hent_kunde(kunde_id: int) -> dict[str, Any]:
         try:
             databasen = tilkobling_database()                                   # Koble til databasen
             spørring = databasen.cursor(dictionary=True)                        # Setter spørring til å returnere dictionary
-            spørring.execute(f"SELECT kunde.KNr, kunde.Fornavn, kunde.Etternavn, kunde.Adresse, kunde.PostNr, poststed.Poststed FROM kunde INNER JOIN poststed ON kunde.PostNr = poststed.PostNr WHERE kunde.Knr = {kunde_id} LIMIT 1") 
+            sql_kommando = """
+            SELECT
+                kunde.KNr,
+                kunde.Fornavn,
+                kunde.Etternavn,
+                kunde.Adresse,
+                kunde.PostNr,
+                poststed.Poststed
+            FROM kunde
+            INNER JOIN poststed ON kunde.PostNr = poststed.PostNr
+            WHERE kunde.KNr = %s
+            LIMIT 1;
+            """                                                                 # SQL spørring for å hente spesifik kunde
+            spørring.execute(sql_kommando, (kunde_id,))                         # Utfører spørring med kunde_id som parameter
             resultat = spørring.fetchone()                                      # Lagrer resultat fra spørring
             if isinstance(resultat, dict):                                      # Sjekker om resultatet er en dict
                 return resultat                                                 # Returnerer resultatet
@@ -288,6 +277,9 @@ def hent_kunde(kunde_id: int) -> dict[str, Any]:
         except mysql.connector.Error as err:
             print(f"Feil ved henting av spesifikke kunder: {err}")
             return {}
+        finally:
+            databasen.close() if databasen else None
+            spørring.close() if spørring else None
     else:
         print("Ingen kunder valgt.")
         return {}
@@ -307,6 +299,9 @@ def hent_kunder_filter()-> list[Any]:
     except mysql.connector.Error as err:
         print(f"Feil ved henting av kunder: {err}")
         return []
+    finally:
+        databasen.close() if databasen else None
+        spørring.close() if spørring else None
 
 def slett_kunde(kunde_id: int)-> int:
     """
@@ -316,23 +311,25 @@ def slett_kunde(kunde_id: int)-> int:
     Returns: 
         kunde_id hvis sletting var vellykket, 0 ellers.
     """
-    if kunde_id is not None and kunde_id > 0:                     # Sjekker om kunde_id er gyldig
+    if kunde_id is not None and kunde_id > 0:                                   # Sjekker om kunde_id er gyldig
         try:
             databasen = tilkobling_database()                                   # Koble til databasen
             spørring = databasen.cursor()                                       # Dette er en virituell "markør"
-            spørring.execute(f"DELETE FROM kunde WHERE kunde.KNr = {kunde_id}") 
+            sql_kommando = """
+            DELETE FROM kunde
+            WHERE kunde.KNr = %s
+            """                                                                 # SQL spørring for å slette kunde
+            spørring.execute(sql_kommando, (kunde_id,)) 
             databasen.commit()                                                  # Utfører handling
         except mysql.connector.IntegrityError as err:
-            logging.error(f"Feil ved sletting av kunde: {err}")                  # Logger feil ved sletting av kunde
+            logging.error(f"Feil ved sletting av kunde: {err}")                 # Logger feil ved sletting av kunde
             return 0                                                            # Returnerer 0 hvis sletting mislyktes
         except mysql.connector.Error as err:
-            logging.error(f"Feil ved sletting av kunde: {err}")                  # Logger feil ved sletting av kunde
+            logging.error(f"Feil ved sletting av kunde: {err}")                 # Logger feil ved sletting av kunde
             return 0                                                            # Returnerer 0 hvis sletting mislyktes
         finally:
-            if databasen:
-                databasen.close()
-            if spørring:
-                spørring.close()
+            databasen.close() if databasen else None
+            spørring.close() if spørring else None
         return kunde_id
     else:
         return 0
@@ -364,7 +361,7 @@ def oppdater_kunde(
         kunde_valider_helper(etternavn, 2, 32) and
         kunde_valider_helper(adresse, 2, 32) and
         kunde_valider_helper(postnr, 0000, 9999, postnr=True)
-    ):
+    ):                                                                          # Validerer inndata
         kunde_data = (kundenummer, fornavn, etternavn, adresse, postnr)
         try:
             databasen = tilkobling_database() # koble til databasen
@@ -375,7 +372,8 @@ def oppdater_kunde(
         except:
             raise ConnectionError("Tilkobling til database mislykket")
         finally:
-            databasen.close()
+            databasen.close() if databasen else None
+            spørring.close() if spørring else None
     else:
         raise ValueError("Angitt data er ugyldig")
 
@@ -404,7 +402,7 @@ def opprett_kunde(
         kunde_valider_helper(etternavn, 2, 32) and
         kunde_valider_helper(adresse, 2, 32) and
         kunde_valider_helper(postnr, 3, 5)
-    ):
+    ):                                                                          # Validerer inndata
         kunde_data = (fornavn, etternavn, adresse, postnr)
         try:
             databasen = tilkobling_database()                                   
@@ -468,7 +466,7 @@ def kunde_valider_helper(streng: str | int, fra: int, til: int, tall: bool= Fals
 tilgjengelige_postnumre: list[str]= []                                          # Henter postnr fra databasen denne trengs bare hentes 1 gang.
 
 
-## Generer faktura database:
+## Lagrer faktura til database:
 def lagre_faktura(
         faktura_navn: str,
         forfall_dato: str,
@@ -501,7 +499,7 @@ def lagre_faktura(
         databasen.commit()
         return True
     except mysql.connector.Error as err:
-        print(f"Feil ved lagring av faktura: {err}")
+        logging.error(f"Feil ved lagring av faktura: {err}")                     # Logger feil ved lagring av faktura
         return False
     finally:
         if databasen:

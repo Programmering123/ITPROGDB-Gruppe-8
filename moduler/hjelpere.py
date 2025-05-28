@@ -4,8 +4,9 @@ Varierte hjelpefunksjoner for å håndtere data og konverteringer.
 Funksjoner for å håndtere data og konverteringer til gjenbruk i andre moduler
 og klasser.
 """
-import customtkinter # Importerer kun for typehinting.
-from CTkMessagebox import CTkMessagebox
+import logging
+import customtkinter                                                            # Importerer kun for typehinting.
+from CTkMessagebox import CTkMessagebox                                         # Importerer CTkMessagebox for å vise meldinger til brukeren.
 from api.database import tilgjengelige_postnumre
 import re
 
@@ -23,6 +24,7 @@ def validering_postnr_sanntid(
     Returverdi:
         bool: True hvis postnummeret er gyldig, False ellers.
     """
+    logging.debug(f"Validerer postnummer: {postnr}")                            # Logger postnummeret som valideres
     if postnr == "":
         feilmelding.grid_forget()                                               # Skjuler feilmelding
         return True                                                             # Tillatter tomt felt
@@ -60,7 +62,7 @@ def validering_adresse_sanntid(
         feilmelding.configure(text = "Maks 30 tegn")                            # Feilmelding til bruker
         feilmelding.grid(row=rad, column=2, sticky="nsew", padx=10, pady=10)    # Viser feilmelding
         return False
-    tillatt_regex = r"^[a-zA-Z0-9æøåÆØÅéÉ\s.,-]+$"                                # Regex for tillatte karakterer
+    tillatt_regex = r"^[a-zA-Z0-9æøåÆØÅéÉ\s.,-]+$"                              # Regex for tillatte karakterer
     if not re.match(tillatt_regex, adresse):                                    # Sjekker om adressen inneholder tillatte karakterer 
         feilmelding.configure(text = "Kun bokstaver og tall")                   # Feilmelding til bruker
         feilmelding.grid(row=rad, column=2, sticky="nsew", padx=10, pady=10)    # Viser feilmelding

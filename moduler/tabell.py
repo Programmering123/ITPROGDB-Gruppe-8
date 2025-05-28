@@ -151,14 +151,15 @@ class Tabell:
             "<Double-1>",                                                       # Binder dobbeltklikk
             lambda event: (
                 self.vis_detaljer(                                              # Bruker en lambda funksjon som peker til funksjon
-                    self.tabell.item(self.tabell.focus())['values']             # Sende verdiene til valgt rad som argument
+                    self.tabell.item(self.tabell.focus())['values'],            # Sende verdiene til valgt rad som argument
+                    )
                 )
                 if self.tabell.focus() and self.tabell.identify_region(
                     event.x, event.y == "cell"
                 )                                                               # Sjekker om det er valgt en rad og at det er en celle som er klikket på
                 else None
             )
-        )       
+               
         
         if self.knapp_detaljer_betinget and self.knapp_detaljer != None:        # Sjekker om detaljknappen er opprettet og at den er betinget
             self.knapp_detaljer.configure(state="disabled")
@@ -271,7 +272,7 @@ class Tabell:
         til =  fra + int(self.knapp_antall_var.get())                           # Beregner til hvilken rad vi skal slutte å vise dataene
         # Legger til nye rader i tabellen:
         for rad in self.vist_data[fra:til]:                                     # Går gjennom dataene tilgjengelig, begrenset til sidevisning
-            self.tabell.insert("", "end", values=rad)                           # Legger de inn i tabell
+            self.tabell.insert("", "end", values=[str(verdi) for verdi in rad])                           # Legger de inn i tabell
         self.antall_sider = len(self.vist_data) // int(self.knapp_antall_var.get()) + 1     # Beregner antall sider på nytt
         self.side_indikator.configure(text=f"{self.aktuell_side}/{self.antall_sider}")      # Oppdaterer sideindikatoren
 

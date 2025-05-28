@@ -74,10 +74,10 @@ class Kunder(Tabell):
     def valg_filter_boks_oppdater(self):
         self.filter = not self.filter
         if self.filter:
-            self.data = db_kunder_hent_filter()                                        # Henter data fra databasen
+            self.data = db_kunder_hent_filter()                                 # Henter data fra databasen
             self.let_i_data(self.leteord.get())                                 # Oppdaterer tabellen med data fra databasen
         else:
-            self.data = self.hent_data()                                            # Henter data fra databasen
+            self.data = self.hent_data()                                        # Henter data fra databasen
             self.let_i_data(self.leteord.get())                                 # Oppdaterer tabellen med data fra databasen
 
     def knapp_oppdater_tilstand(self, event):
@@ -93,9 +93,9 @@ class Kunder(Tabell):
         Den kan valgfritt ta imot kundedata for redigering, eller oppretter kunde uten kundedata
         Den benytter seg av master og bruker detaljvisningrammen som er opprettet i TabellModul. 
         """
-        if len(kundedata) != 0 and isinstance(kundedata, list):                 # Sjekker om kundedata er en liste og ikke tom
+        if len(kundedata) != 0 and isinstance(kundedata, list):                 # Sjekker om kundedata er en liste og ikke tom, i tilfelle redigering av kunde.
             self.kundenummer, fornavn, etternavn, adresse, postnr = kundedata   # Legger dataen til passende variabler
-
+            postnr = str(postnr).zfill(4) if postnr else ""                     # Bugfix: Gjør postnummer til string, og legger til evt manglende 0'er  hvis det er sendt inn, ellers tom string
         if not self.vis_detalj_ramme():
             bruker_varsel("Feil ved oppretting av detaljvisningramme", "error") # Viser feilmelding til bruker
             return False
@@ -129,7 +129,7 @@ class Kunder(Tabell):
             ramme_hoved, "Adresse", 2, validering_adresse_sanntid
         )                                                                       # Lager inputfelt for adresse, med validering
         self.input_postnr = self.lag_inputfelt(
-            ramme_hoved, "Postnummer:", 3, validering_postnr_sanntid            # TODO : Validering av postnummer er ikke optimalt se 0015
+            ramme_hoved, "Postnummer:", 3, validering_postnr_sanntid            
         )                                                                       # Lager inputfelt for postnummer, med validering
 
         # Forskjellig tekst og kommando for å opprette eller redigere kunde:
@@ -137,6 +137,7 @@ class Kunder(Tabell):
         
         # innsetting av verdier, i forbindelse med redigering av kunde:
         if self.kundenummer:                                                    # Dette skal kun gjøres hvis det er sendt kundedata.
+            logging.debug(f"Postnr er: {postnr}")                               # Logger postnummeret som skal settes inn i inputfeltet.
             self.input_fornavn[1].insert(0, fornavn)
             self.input_etternavn[1].insert(0, etternavn)
             self.input_adresse[1].insert(0, adresse)
@@ -277,22 +278,22 @@ class Kunder(Tabell):
                 db_kunde_oppdater(self.kundenummer, fornavn, etternavn, adresse, str(postnr))
                 self.tabell_visning_ramme.lift(self.detalj_visning_ramme)       # Løfter tabellvisningrammen opp så den blir synlig
                 self.detalj_visning_ramme.grid_forget()                         # Skjuler detaljvisningrammen etter lagring av kunde.
-                bruker_varsel(f"Kunde {fornavn} er oppdatert", "check")                  # Viser varsel til bruker om at kunden er oppdatert
+                bruker_varsel(f"Kunde {fornavn} er oppdatert", "check")         # Viser varsel til bruker om at kunden er oppdatert
             except Exception as e:                                              # Fanger opp feil ved oppdatering av kunde
-                logging.error(f"Feil ved oppdatering av kunde: {e}")  # Logger feilen
-                bruker_varsel("Feil ved oppdatering av kunde", "warning")         # Viser feilmelding til bruker                  
+                logging.error(f"Feil ved oppdatering av kunde: {e}")            # Logger feilen
+                bruker_varsel("Feil ved oppdatering av kunde", "warning")       # Viser feilmelding til bruker                  
         else:
             try:    
                 db_kunde_opprett(fornavn, etternavn, adresse, str(postnr))
                 self.tabell_visning_ramme.lift(self.detalj_visning_ramme)       # Løfter tabellvisningrammen opp så den blir synlig
                 self.detalj_visning_ramme.grid_forget()                         # Skjuler detaljvisningrammen etter lagring av kunde.
-                bruker_varsel(f"Kunde {fornavn} er opprettet", "check")                   # Viser varsel til bruker om at kunden er opprettet
+                bruker_varsel(f"Kunde {fornavn} er opprettet", "check")         # Viser varsel til bruker om at kunden er opprettet
             except Exception as e:                                              # Fanger opp feil ved oppretting av kunde
-                logging.error(f"Feil ved oppretting av kunde: {e}")                     # Logger feil ved oppretting av kunde
-                bruker_varsel("Feil ved oppretting av kunde", "warning")         # Viser feilmelding til bruker
-        self.kundenummer = None                                      # Nullstiller kundenummeret etter oppdatering
+                logging.error(f"Feil ved oppretting av kunde: {e}")             # Logger feil ved oppretting av kunde
+                bruker_varsel("Feil ved oppretting av kunde", "warning")        # Viser feilmelding til bruker
+        self.kundenummer = None                                                 # Nullstiller kundenummeret etter oppdatering
         self.data = self.hent_data()                                            # Henter data fra databasen på nytt
-        self.let_i_data(self.leteord.get())                                            # Oppdaterer tabellen etter lagring av kunde
+        self.let_i_data(self.leteord.get())                                     # Oppdaterer tabellen etter lagring av kunde
     
     def slett_kunde(self) -> bool:
         """
@@ -314,18 +315,15 @@ class Kunder(Tabell):
             bruker_varsel("Ingen kunde valgt", "error")                         # Viser varsel til bruker om at ingen kunde er valgt
             return False  
         try:       
-            resultat = db_kunde_slett(self.kundenummer)                             # Sletter kunde fra databasen og lagrer resultatet i variabel
+            resultat = db_kunde_slett(self.kundenummer)                         # Sletter kunde fra databasen og lagrer resultatet i variabel
         except Exception as e:                                                  # Fanger opp feil ved sletting av kunde
-            logging.error(f"Feil ved sletting av kunde {self.kundenummer}: {e}")  # Logger feilen
+            logging.error(f"Feil ved sletting av kunde {self.kundenummer}: {e}")# Logger feilen
         if  resultat==0:
             bruker_varsel("Ordre bundet mot kunde, kan ikke slette", "warning") # Viser varsel til bruker om at ingen kunde er valgt
         if resultat:    
             bruker_varsel("Kunde er slettet", "check")                          # Sjekker om slettingen var vellykket
-            # self.leteord.delete(0, "end")                                       # Fjerner søketeksten
-            # self.filter = False
-            # self.velg_filter.deselect()                                         
             self.data = self.hent_data()                                        # Henter data fra databasen på nytt
-            self.let_i_data(self.leteord.get())                                                 # Oppdaterer tabellen etter sletting av kunde
+            self.let_i_data(self.leteord.get())                                 # Oppdaterer tabellen etter sletting av kunde
             self.tabell_visning_ramme.lift(self.detalj_visning_ramme)           # Løfter tabellvisningrammen opp så den blir synlig
             self.detalj_visning_ramme.grid_forget()                             # Skjuler detaljvisningrammen etter sletting av kunde.
         return True
