@@ -8,6 +8,7 @@ Denne filen oppretter også nødvendige prosedyrer i databasen.
 import logging
 from pathlib import Path
 from dotenv import load_dotenv
+import getpass
 dotenv_path = Path('secrets.env')
 load_dotenv(dotenv_path=dotenv_path, override=True)  # Laster inn .env filen for å hente database informasjon
 
@@ -145,7 +146,7 @@ def opprett_login():
     Funksjon for å opprette en login til databasen.
     """
     brukernavn = input("Skriv inn bruker til databasen: ")                      # Spør bruker om brukernavn
-    passord = input("Skriv inn passord til databasen: ")                        # Spør bruker om passord
+    passord = getpass.getpass("Skriv inn passord til databasen: ")              # Spør bruker om passord
     hostnavn = input("Skriv inn adresse til databasen (standard localhost): ")  # Spør bruker om hostnavn
     port = input("Skriv inn port til databasen (standard 3306): ")              # Spør bruker om port
     if hostnavn == "":                                                          # Hvis hostnavn er tomt, bruk standard localhost

@@ -60,6 +60,7 @@ def tilkobling_database():
             "Kunne ikke koble til database. Sjekk .env filen og at databasen er oppe."
             )                                                                   # Kaster en feilmelding hvis tilkobling mislykkes
 
+
 ## ORDREHÅNDTERING 
 def hent_ordrer():   
     """ Henter alle ordrer fra databasen.""" 
@@ -161,6 +162,7 @@ def hent_ordrelinjer(ordre_id: int)-> list[Any]:
             databasen.close()
         if spørring:
             spørring.close()
+
 
 ## VARELAGERHÅNDTERING
 # Funksjon for å hente varelageret:
@@ -416,7 +418,7 @@ def opprett_kunde(
             databasen.close()
     else:
         raise ValueError("Angitt data er ugyldig")
-
+    
 
 ## DIVERSE FUNKSJONER:
 # Funksjon for å hente postnr fra databasen:    
@@ -464,7 +466,6 @@ def kunde_valider_helper(streng: str | int, fra: int, til: int, tall: bool= Fals
 
 # Forhåndsdefinerte postnr for å unngå å hente dem fra databasen flere ganger.
 tilgjengelige_postnumre: list[str]= []                                          # Henter postnr fra databasen denne trengs bare hentes 1 gang.
-
 
 ## Lagrer faktura til database:
 def lagre_faktura(
