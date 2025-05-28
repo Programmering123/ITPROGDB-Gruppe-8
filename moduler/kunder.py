@@ -275,7 +275,7 @@ class Kunder(Tabell):
 
         if self.kundenummer:                                                    # Sjekker vi skal oppdatere eller opprette kunde
             try:
-                db_kunde_oppdater(self.kundenummer, fornavn, etternavn, adresse, str(postnr))
+                db_kunde_oppdater(self.kundenummer, fornavn, etternavn, adresse, str(postnr).zfill(4)) # Oppdaterer kunde i databasen
                 self.tabell_visning_ramme.lift(self.detalj_visning_ramme)       # Løfter tabellvisningrammen opp så den blir synlig
                 self.detalj_visning_ramme.grid_forget()                         # Skjuler detaljvisningrammen etter lagring av kunde.
                 bruker_varsel(f"Kunde {fornavn} er oppdatert", "check")         # Viser varsel til bruker om at kunden er oppdatert
@@ -284,7 +284,7 @@ class Kunder(Tabell):
                 bruker_varsel("Feil ved oppdatering av kunde", "warning")       # Viser feilmelding til bruker                  
         else:
             try:    
-                db_kunde_opprett(fornavn, etternavn, adresse, str(postnr))
+                db_kunde_opprett(fornavn, etternavn, adresse, str(postnr).zfill(4)) # Oppretter ny kunde i databasen
                 self.tabell_visning_ramme.lift(self.detalj_visning_ramme)       # Løfter tabellvisningrammen opp så den blir synlig
                 self.detalj_visning_ramme.grid_forget()                         # Skjuler detaljvisningrammen etter lagring av kunde.
                 bruker_varsel(f"Kunde {fornavn} er opprettet", "check")         # Viser varsel til bruker om at kunden er opprettet
